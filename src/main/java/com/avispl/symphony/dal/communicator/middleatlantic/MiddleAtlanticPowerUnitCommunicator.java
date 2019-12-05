@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implements Monitorable, Controller {
 
@@ -19,6 +20,8 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     private final String BACE_URI = "model/pdu/0/";
     private final String OUTLET = "Outlet ";
     private final String GET_READING = "getReading";
+    private CountDownLatch latch;
+    private ExecutorService executor;
 
     /**
      * MiddleAtlanticPowerUnit constructor.
@@ -44,10 +47,8 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         device.init();
 
         long startTime = System.currentTimeMillis();
-
-        List<Statistics> multipleStatistics = device.getMultipleStatistics();
-        System.out.println("multipleStatistics = " + multipleStatistics);
-        System.out.println("Time = " + String.valueOf(System.currentTimeMillis() - startTime) + " ms");
+        device.getMultipleStatistics();
+        System.out.println("Time = " + (System.currentTimeMillis() - startTime) + " ms");
     }
 
     @Override
@@ -58,20 +59,25 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     @Override
     public List<Statistics> getMultipleStatistics() throws Exception {
         ExtendedStatistics extendedStatistics = new ExtendedStatistics();
-        Map<String, String> statistics = new LinkedHashMap<>();
+        Map<String, String> statistics = Collections.synchronizedMap(new LinkedHashMap<>());
+        Map<String, String> control = new ConcurrentHashMap<>();
 
+        int outletsCount = getOutletsCount();
+        executor = Executors.newFixedThreadPool(outletsCount * 4 + 8);
+        latch = new CountDownLatch(outletsCount * 2 + 4);
         fillInStatistics(statistics, "Inlet Active Power", "/inlet/0/activePower", GET_READING);
         fillInStatistics(statistics, "Inlet RMS Current", "/inlet/0/current", GET_READING);
         fillInStatistics(statistics, "Inlet Line Frequency", "/inlet/0/lineFrequency", GET_READING);
         fillInStatistics(statistics, "Inlet RMS Voltage", "/inlet/0/voltage", GET_READING);
 
-        int outletsCount = getOutletsCount();
-        Map<String, String> control = new LinkedHashMap<>();
         for (int outletNumber = 0; outletNumber < outletsCount; ++outletNumber) {
             fillInOutletState(statistics, control, outletNumber);
             fillInStatistics(statistics, OUTLET + (outletNumber + 1) + " RMS Current",
                     "outlet/" + outletNumber + "/current", GET_READING);
         }
+
+        latch.await(30, TimeUnit.SECONDS);
+        executor.shutdown();
 
         extendedStatistics.setStatistics(statistics);
         extendedStatistics.setControl(control);
@@ -79,48 +85,57 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         return new ArrayList<>(Arrays.asList(extendedStatistics));
     }
 
-    private int getOutletsCount() throws Exception {
+    private int getOutletsCount() {
         try {
             Map result = doPost("model/outlet", null, Map.class);
             return (int) ((Map) ((Map) result.get("result")).get("_ret_")).get("numberOfOutlets");
         } catch (Exception e) {
-            throw new Exception("Method doesn't not work at the URI " + BACE_URI + "model/outlet", e);
+            throw new RuntimeException("Method doesn't not work at the URI " + BACE_URI + "model/outlet", e);
         }
     }
 
-    private void fillInOutletState(Map<String, String> statistics, Map<String, String> control, int outletNumber) throws Exception {
-        int outletNumberUI = outletNumber + 1;
-        try {
-            Map result = doPost(BACE_URI + "/outlet/" + outletNumber,
-                    ImmutableMap.of(
-                            "jsonrpc", "2.0",
-                            "method", "getState"), Map.class);
-            if ((boolean) ((Map) ((Map) result.get("result")).get("_ret_")).get("available")) {
-                statistics.put(OUTLET + outletNumberUI,
-                        String.valueOf((int) ((Map) ((Map) result.get("result")).get("_ret_")).get("powerState") == 1));
-                control.put(OUTLET + outletNumberUI, "Toggle");
+    private void fillInOutletState(Map<String, String> statistics, Map<String, String> control, int outletNumber) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                int outletNumberUI = outletNumber + 1;
+                Map result = doPost(BACE_URI + "/outlet/" + outletNumber,
+                        ImmutableMap.of(
+                                "jsonrpc", "2.0",
+                                "method", "getState"), Map.class);
+                if ((boolean) ((Map) ((Map) result.get("result")).get("_ret_")).get("available")) {
+                    latch.countDown();
+                    statistics.put(OUTLET + outletNumberUI,
+                            String.valueOf((int) ((Map) ((Map) result.get("result")).get("_ret_")).get("powerState") == 1));
+                    control.put(OUTLET + outletNumberUI, "Toggle");
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Method doesn't not work at the URI " + BACE_URI + "model/outlet", e);
             }
-        } catch (Exception e) {
-            throw new Exception("Method doesn't not work at the URI " + BACE_URI + "model/outlet", e);
-        }
+        }, executor);
     }
 
-    private void fillInStatistics(Map<String, String> statistics, String fieldName, String uri, String method) throws Exception {
-        String response;
+    private void fillInStatistics(Map<String, String> statistics, String fieldName, String url, String method) {
+        CompletableFuture.runAsync(() -> {
+            String response = call(url, method);
+            if (response != null) {
+                statistics.put(fieldName, response);
+            }
+            latch.countDown();
+        }, executor);
+    }
+
+    private String call(String url, String method) {
         try {
-            response = ((Map) ((Map) doPost(BACE_URI + uri,
+            return (((Map) ((Map) doPost(BACE_URI + url,
                     ImmutableMap.of(
                             "jsonrpc", "2.0",
                             "method", method),
                     Map.class)
                     .get("result"))
                     .get("_ret_"))
-                    .get("value").toString();
+                    .get("value").toString());
         } catch (Exception e) {
-            throw new Exception(method + " method doesn't not work at the URI " + BACE_URI + uri, e);
-        }
-        if (response != null) {
-            statistics.put(fieldName, response);
+            throw new RuntimeException(e);
         }
     }
 
@@ -137,7 +152,15 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
 
     @Override
     public void controlProperty(ControllableProperty controllableProperty) throws Exception {
-        setOutletState(controllableProperty);
+        CompletableFuture.runAsync(() -> {
+            try {
+                setOutletState(controllableProperty);
+            } catch (Exception e) {
+                log.error("controlProperty property=" + controllableProperty.getProperty()
+                        + "value=" + controllableProperty.getValue() +
+                        " deviceId=" + controllableProperty.getDeviceId(), e);
+            }
+        });
     }
 
     private void setOutletState(ControllableProperty controllableProperty) throws Exception {
