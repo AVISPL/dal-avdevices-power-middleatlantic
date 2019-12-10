@@ -13,15 +13,17 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.IntStream;
+
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implements Monitorable, Controller {
 
-    private Log log = LogFactory.getLog(this.getClass());
-    private final String BACE_URI = "model/pdu/0/";
-    private final String OUTLET = "Outlet ";
+    private final Log log = LogFactory.getLog(this.getClass());
+    private final String BASE_URI = "model/pdu/0/";
+    private final String OUTLET = "Outlet";
     private final String GET_READING = "getReading";
-    private CountDownLatch latch;
-    private ExecutorService executor;
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     /**
      * MiddleAtlanticPowerUnit constructor.
@@ -62,21 +64,20 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         Map<String, String> statistics = Collections.synchronizedMap(new LinkedHashMap<>());
         Map<String, String> control = new ConcurrentHashMap<>();
 
-        int outletsCount = getOutletsCount();
-        executor = Executors.newFixedThreadPool(outletsCount * 4 + 8);
-        latch = new CountDownLatch(outletsCount * 2 + 4);
-        fillInStatistics(statistics, "Inlet Active Power", "/inlet/0/activePower", GET_READING);
-        fillInStatistics(statistics, "Inlet RMS Current", "/inlet/0/current", GET_READING);
-        fillInStatistics(statistics, "Inlet Line Frequency", "/inlet/0/lineFrequency", GET_READING);
-        fillInStatistics(statistics, "Inlet RMS Voltage", "/inlet/0/voltage", GET_READING);
+        runAsync(() -> fillInStatistics(statistics, "Inlet Active Power", "/inlet/0/activePower", GET_READING), executor)
+                .thenRunAsync(() -> fillInStatistics(statistics, "Inlet RMS Current", "/inlet/0/current", GET_READING), executor)
+                .thenRunAsync(() -> fillInStatistics(statistics, "Inlet Line Frequency", "/inlet/0/lineFrequency", GET_READING), executor)
+                .thenRunAsync(() -> fillInStatistics(statistics, "Inlet RMS Voltage", "/inlet/0/voltage", GET_READING), executor)
+                .thenApplyAsync(ignore -> getOutletsCount(), executor)
+                .thenAcceptAsync(count -> IntStream.range(0, count)
+                        .parallel()
+                        .mapToObj(num -> runAsync(() -> fillInOutletState(statistics, control, num), executor)
+                                .thenRunAsync(() -> fillInStatistics(statistics, getOutletRMSName(num),
+                                        "outlet/" + num + "/current", GET_READING), executor)
+                        )
+                        .forEach(CompletableFuture::join), executor)
+                .get(30, TimeUnit.SECONDS);
 
-        for (int outletNumber = 0; outletNumber < outletsCount; ++outletNumber) {
-            fillInOutletState(statistics, control, outletNumber);
-            fillInStatistics(statistics, OUTLET + (outletNumber + 1) + " RMS Current",
-                    "outlet/" + outletNumber + "/current", GET_READING);
-        }
-
-        latch.await(30, TimeUnit.SECONDS);
         executor.shutdown();
 
         extendedStatistics.setStatistics(statistics);
@@ -90,43 +91,44 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
             Map result = doPost("model/outlet", null, Map.class);
             return (int) ((Map) ((Map) result.get("result")).get("_ret_")).get("numberOfOutlets");
         } catch (Exception e) {
-            throw new RuntimeException("Method doesn't not work at the URI " + BACE_URI + "model/outlet", e);
+            throw new RuntimeException("Method doesn't not work at the URI " + BASE_URI + "model/outlet", e);
         }
     }
 
     private void fillInOutletState(Map<String, String> statistics, Map<String, String> control, int outletNumber) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                int outletNumberUI = outletNumber + 1;
-                Map result = doPost(BACE_URI + "/outlet/" + outletNumber,
-                        ImmutableMap.of(
-                                "jsonrpc", "2.0",
-                                "method", "getState"), Map.class);
-                if ((boolean) ((Map) ((Map) result.get("result")).get("_ret_")).get("available")) {
-                    latch.countDown();
-                    statistics.put(OUTLET + outletNumberUI,
-                            String.valueOf((int) ((Map) ((Map) result.get("result")).get("_ret_")).get("powerState") == 1));
-                    control.put(OUTLET + outletNumberUI, "Toggle");
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Method doesn't not work at the URI " + BACE_URI + "model/outlet", e);
+        try {
+            Map result = doPost(BASE_URI + "/outlet/" + outletNumber,
+                    ImmutableMap.of(
+                            "jsonrpc", "2.0",
+                            "method", "getState"), Map.class);
+            if ((boolean) ((Map) ((Map) result.get("result")).get("_ret_")).get("available")) {
+                statistics.put(getOutletDisplayName(outletNumber),
+                        String.valueOf((int) ((Map) ((Map) result.get("result")).get("_ret_")).get("powerState") == 1));
+                control.put(getOutletDisplayName(outletNumber), "Toggle");
             }
-        }, executor);
+        } catch (Exception e) {
+            throw new RuntimeException("Method doesn't not work at the URI " + BASE_URI + "model/outlet", e);
+        }
     }
 
+    private String getOutletDisplayName(int outletNumber) {
+        int displayOutletNumber = outletNumber + 1;
+        return String.format("%s %d", OUTLET, displayOutletNumber);
+    }
+
+    private String getOutletRMSName(int outletNumber) {
+        int displayOutletNumber = outletNumber + 1;
+        return String.format("%s %d %s", OUTLET, displayOutletNumber, "RMS Current");
+    }
+
+
     private void fillInStatistics(Map<String, String> statistics, String fieldName, String url, String method) {
-        CompletableFuture.runAsync(() -> {
-            String response = call(url, method);
-            if (response != null) {
-                statistics.put(fieldName, response);
-            }
-            latch.countDown();
-        }, executor);
+        Optional.ofNullable(call(url, method)).ifPresent(response -> statistics.put(fieldName, response));
     }
 
     private String call(String url, String method) {
         try {
-            return (((Map) ((Map) doPost(BACE_URI + url,
+            return (((Map) ((Map) doPost(BASE_URI + url,
                     ImmutableMap.of(
                             "jsonrpc", "2.0",
                             "method", method),
@@ -151,8 +153,8 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     }
 
     @Override
-    public void controlProperty(ControllableProperty controllableProperty) throws Exception {
-        CompletableFuture.runAsync(() -> {
+    public void controlProperty(ControllableProperty controllableProperty) {
+        runAsync(() -> {
             try {
                 setOutletState(controllableProperty);
             } catch (Exception e) {
@@ -167,7 +169,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         String response;
         String property = controllableProperty.getProperty();
         int outletNumber = Integer.parseInt(String.valueOf(property.charAt(property.length() - 1)));
-        String uri = BACE_URI + "outlet/" + (outletNumber - 1);
+        String uri = BASE_URI + "outlet/" + (outletNumber - 1);
         String data = "{\"jsonrpc\":\"2.0\",\"method\":\"setPowerState\",\"params\":{\"pstate\":" + controllableProperty.getValue() + "}}";
         try {
             Map map = doPost(uri, data, Map.class);
@@ -183,7 +185,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         int responseCode = Integer.parseInt(response);
         switch (responseCode) {
             case 0:
-                log.info("SetPowerState method for Outlet " + outletNumber + " is works, responce is good");
+                log.info("SetPowerState method for Outlet " + outletNumber + " works, response is good");
                 break;
             case 1:
                 log.info("SetPowerState method for Outlet " + outletNumber + " error: OUTLET NOT SWITCHABLE");
