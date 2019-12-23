@@ -57,11 +57,6 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     }
 
     @Override
-    protected void internalInit() throws Exception {
-        super.internalInit();
-    }
-
-    @Override
     protected void authenticate() throws Exception {
         // nothing to do here, authentication is done in individual requests
     }
