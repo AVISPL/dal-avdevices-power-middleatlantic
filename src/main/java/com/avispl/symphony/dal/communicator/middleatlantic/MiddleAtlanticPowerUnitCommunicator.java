@@ -20,7 +20,7 @@ import java.util.stream.IntStream;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
 
-public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implements Monitorable, Controller, Pingable {
+public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implements Monitorable, Controller {
 
     private final Log log = LogFactory.getLog(this.getClass());
     private final String BASE_URI = "model/pdu/0/";
