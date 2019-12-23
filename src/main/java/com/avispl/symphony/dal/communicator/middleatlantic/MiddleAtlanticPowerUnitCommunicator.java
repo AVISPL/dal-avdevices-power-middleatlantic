@@ -121,7 +121,6 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         return String.format("%s %d %s", OUTLET, displayOutletNumber, "RMS Current");
     }
 
-
     private void fillInStatistics(Map<String, String> statistics, String fieldName, String url, String method) {
         Optional.ofNullable(call(url, method)).ifPresent(response -> statistics.put(fieldName, response));
     }
