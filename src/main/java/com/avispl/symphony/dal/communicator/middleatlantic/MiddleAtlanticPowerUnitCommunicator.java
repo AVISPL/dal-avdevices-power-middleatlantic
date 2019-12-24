@@ -5,7 +5,6 @@ import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.api.dal.monitor.Monitorable;
-import com.avispl.symphony.api.dal.ping.Pingable;
 import com.avispl.symphony.dal.communicator.RestCommunicator;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.logging.Log;
@@ -13,7 +12,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.IntStream;
@@ -90,36 +90,43 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     }
 
     /**
-     * @return -1 or timeout if host is not reachable within
+     * @return -1 if host is not reachable within
      * the pingTimeout, a ping time in milliseconds otherwise
      * if ping is 0ms it's rounded up to 1ms to avoid IU issues on Symphony portal
      * @throws IOException
      */
     @Override
     public int ping() throws IOException {
-        InetAddress inetAddress = InetAddress.getByName(this.getHost());
-        long totalTime = 0L;
+        long startTime;
+        long endTime;
+        long pingResultTotal = 0L;
 
-        for (int i = 0; i < this.getPingAttempts(); i++) {
-            long startTime = System.currentTimeMillis();
-            boolean reachable = inetAddress.isReachable(this.getPingTimeout());
-            long endTime = System.currentTimeMillis();
+        Socket puSocketConnection = null;
+        try {
+            for(int i = 0; i < this.getPingAttempts(); i++) {
+                startTime = System.currentTimeMillis();
 
-            if (reachable) {
-                totalTime += (endTime - startTime);
-                if (this.logger.isTraceEnabled()) {
-                    this.logger.trace(String.format("OK: TCP ping attempt for host %s: success in %sms", this.getHost(), (endTime - startTime)));
+                puSocketConnection = new Socket(this.getHost(), this.getPort());
+                puSocketConnection.setSoTimeout(this.getPingTimeout());
+
+                if (puSocketConnection.isConnected()) {
+                    endTime = System.currentTimeMillis();
+                    long pingResult = endTime - startTime;
+                    pingResultTotal += pingResult;
+                    if (this.logger.isTraceEnabled()) {
+                        this.logger.trace(String.format("OK: Attempt #%s to connect to %s on port %s succeeded in %s ms", i + 1, this.getHost(), this.getPort(), pingResult));
+                    }
                 }
-            } else {
-                int notReachedIn = Math.toIntExact(endTime - startTime);
-                if (this.logger.isDebugEnabled()) {
-                    this.logger.debug(String.format("TIMEOUT: TCP ping attempt for host %s: failed in %sms", this.getHost(), notReachedIn));
-                }
-                return notReachedIn < getPingTimeout() ? -1 : notReachedIn;
             }
+        } catch (SocketTimeoutException tex){
+            if (this.logger.isDebugEnabled()) {
+                this.logger.debug(String.format("TIMEOUT: Connection to %s did not succeed within the timeout period of %sms", this.getHost(), this.getPingTimeout()));
+            }
+            return -1;
+        } finally {
+            puSocketConnection.close();
         }
-
-        return Math.max(1, Math.toIntExact(totalTime / getPingAttempts()));
+        return Math.max(1, Math.toIntExact(pingResultTotal / this.getPingAttempts()));
     }
 
     private int getOutletsCount() {
