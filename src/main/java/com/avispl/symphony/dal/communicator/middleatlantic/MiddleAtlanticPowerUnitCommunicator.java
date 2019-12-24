@@ -5,12 +5,15 @@ import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.api.dal.monitor.Monitorable;
+import com.avispl.symphony.api.dal.ping.Pingable;
 import com.avispl.symphony.dal.communicator.RestCommunicator;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.IntStream;
@@ -23,7 +26,6 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     private final String BASE_URI = "model/pdu/0/";
     private final String OUTLET = "Outlet";
     private final String GET_READING = "getReading";
-    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     /**
      * MiddleAtlanticPowerUnit constructor.
@@ -51,6 +53,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         long startTime = System.currentTimeMillis();
         device.getMultipleStatistics();
         System.out.println("Time = " + (System.currentTimeMillis() - startTime) + " ms");
+        System.out.println("Ping: " + device.ping() + "ms");
     }
 
     @Override
@@ -64,6 +67,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         Map<String, String> statistics = Collections.synchronizedMap(new LinkedHashMap<>());
         Map<String, String> control = new ConcurrentHashMap<>();
 
+        ExecutorService executor = Executors.newCachedThreadPool();
         runAsync(() -> fillInStatistics(statistics, "Inlet Active Power", "/inlet/0/activePower", GET_READING), executor)
                 .thenRunAsync(() -> fillInStatistics(statistics, "Inlet RMS Current", "/inlet/0/current", GET_READING), executor)
                 .thenRunAsync(() -> fillInStatistics(statistics, "Inlet Line Frequency", "/inlet/0/lineFrequency", GET_READING), executor)
@@ -78,12 +82,44 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
                         .forEach(CompletableFuture::join), executor)
                 .get(30, TimeUnit.SECONDS);
 
-        executor.shutdown();
+        executor.shutdownNow();
 
         extendedStatistics.setStatistics(statistics);
         extendedStatistics.setControl(control);
-
         return new ArrayList<>(Arrays.asList(extendedStatistics));
+    }
+
+    /**
+     * @return -1 or timeout if host is not reachable within
+     * the pingTimeout, a ping time in milliseconds otherwise
+     * if ping is 0ms it's rounded up to 1ms to avoid IU issues on Symphony portal
+     * @throws IOException
+     */
+    @Override
+    public int ping() throws IOException {
+        InetAddress inetAddress = InetAddress.getByName(this.getHost());
+        long totalTime = 0L;
+
+        for (int i = 0; i < this.getPingAttempts(); i++) {
+            long startTime = System.currentTimeMillis();
+            boolean reachable = inetAddress.isReachable(this.getPingTimeout());
+            long endTime = System.currentTimeMillis();
+
+            if (reachable) {
+                totalTime += (endTime - startTime);
+                if (this.logger.isTraceEnabled()) {
+                    this.logger.trace(String.format("OK: TCP ping attempt for host %s: success in %sms", this.getHost(), (endTime - startTime)));
+                }
+            } else {
+                int notReachedIn = Math.toIntExact(endTime - startTime);
+                if (this.logger.isDebugEnabled()) {
+                    this.logger.debug(String.format("TIMEOUT: TCP ping attempt for host %s: failed in %sms", this.getHost(), notReachedIn));
+                }
+                return notReachedIn < getPingTimeout() ? -1 : notReachedIn;
+            }
+        }
+
+        return Math.max(1, Math.toIntExact(totalTime / getPingAttempts()));
     }
 
     private int getOutletsCount() {
