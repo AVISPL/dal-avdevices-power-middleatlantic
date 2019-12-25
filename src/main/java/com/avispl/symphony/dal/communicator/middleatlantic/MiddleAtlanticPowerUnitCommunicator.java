@@ -114,17 +114,24 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
                     long pingResult = endTime - startTime;
                     pingResultTotal += pingResult;
                     if (this.logger.isTraceEnabled()) {
-                        this.logger.trace(String.format("OK: Attempt #%s to connect to %s on port %s succeeded in %s ms", i + 1, this.getHost(), this.getPort(), pingResult));
+                        this.logger.trace(String.format("PING OK: Attempt #%s to connect to %s on port %s succeeded in %s ms", i + 1, this.getHost(), this.getPort(), pingResult));
                     }
+                } else {
+                    if (this.logger.isDebugEnabled()) {
+                        this.logger.debug(String.format("PING DISCONNECTED: Connection to %s did not succeed within the timeout period of %sms", this.getHost(), this.getPingTimeout()));
+                    }
+                    return -1;
                 }
             }
         } catch (SocketTimeoutException tex){
             if (this.logger.isDebugEnabled()) {
-                this.logger.debug(String.format("TIMEOUT: Connection to %s did not succeed within the timeout period of %sms", this.getHost(), this.getPingTimeout()));
+                this.logger.debug(String.format("PING TIMEOUT: Connection to %s did not succeed within the timeout period of %sms", this.getHost(), this.getPingTimeout()));
             }
             return -1;
         } finally {
-            puSocketConnection.close();
+            if(puSocketConnection != null){
+                puSocketConnection.close();
+            }
         }
         return Math.max(1, Math.toIntExact(pingResultTotal / this.getPingAttempts()));
     }
