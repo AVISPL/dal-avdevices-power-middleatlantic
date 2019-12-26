@@ -23,7 +23,7 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implements Monitorable, Controller {
 
     private final Log log = LogFactory.getLog(this.getClass());
-    private final String BASE_URI = "model/pdu/0/";
+    private final String BASE_URI = "model/pdu/0";
     private final String OUTLET = "Outlet";
     private final String GET_READING = "getReading";
 
@@ -77,7 +77,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
                         .parallel()
                         .mapToObj(num -> runAsync(() -> fillInOutletState(statistics, control, num), executor)
                                 .thenRunAsync(() -> fillInStatistics(statistics, getOutletRMSName(num),
-                                        "outlet/" + num + "/current", GET_READING), executor)
+                                        "/outlet/" + num + "/current", GET_READING), executor)
                         )
                         .forEach(CompletableFuture::join), executor)
                 .get(30, TimeUnit.SECONDS);
@@ -133,7 +133,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
             Map result = doPost("model/outlet", null, Map.class);
             return (int) ((Map) ((Map) result.get("result")).get("_ret_")).get("numberOfOutlets");
         } catch (Exception e) {
-            throw new RuntimeException("Method doesn't not work at the URI " + BASE_URI + "model/outlet", e);
+            throw new RuntimeException("Method doesn't not work at the URI " + BASE_URI + "/model/outlet", e);
         }
     }
 
@@ -149,7 +149,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
                 control.put(getOutletDisplayName(outletNumber), "Toggle");
             }
         } catch (Exception e) {
-            throw new RuntimeException("Method doesn't not work at the URI " + BASE_URI + "model/outlet", e);
+            throw new RuntimeException("Method doesn't not work at the URI " + BASE_URI + "/model/outlet", e);
         }
     }
 
@@ -210,7 +210,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         String response;
         String property = controllableProperty.getProperty();
         int outletNumber = Integer.parseInt(String.valueOf(property.charAt(property.length() - 1)));
-        String uri = BASE_URI + "outlet/" + (outletNumber - 1);
+        String uri = BASE_URI + "/outlet/" + (outletNumber - 1);
         String data = "{\"jsonrpc\":\"2.0\",\"method\":\"setPowerState\",\"params\":{\"pstate\":" + controllableProperty.getValue() + "}}";
         try {
             Map map = doPost(uri, data, Map.class);

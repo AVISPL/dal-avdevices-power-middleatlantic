@@ -1,0 +1,277 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/inlet/0/activePower"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n          \"jsonrpc\": \"2.0\",\r\n          \"result\": {\r\n            \"_ret_\": {\r\n              \"timestamp\": 980796942,\r\n              \"available\": true,\r\n              \"status\": {\r\n                \"aboveUpperCritical\": false,\r\n                \"aboveUpperWarning\": false,\r\n                \"belowLowerWarning\": false,\r\n                \"belowLowerCritical\": false\r\n              },\r\n              \"valid\": true,\r\n              \"value\": 74.460004\r\n            }\r\n          },\r\n          \"id\": null\r\n        }",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/inlet/0/current"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n          \"jsonrpc\": \"2.0\",\r\n          \"result\": {\r\n            \"_ret_\": {\r\n              \"timestamp\": 980797538,\r\n              \"available\": true,\r\n              \"status\": {\r\n                \"aboveUpperCritical\": false,\r\n                \"aboveUpperWarning\": false,\r\n                \"belowLowerWarning\": false,\r\n                \"belowLowerCritical\": false\r\n              },\r\n              \"valid\": true,\r\n              \"value\": 0.796000\r\n            }\r\n          },\r\n          \"id\": null\r\n        }",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/inlet/0/lineFrequency"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n          \"jsonrpc\": \"2.0\",\r\n          \"result\": {\r\n            \"_ret_\": {\r\n              \"timestamp\": 980798016,\r\n              \"available\": true,\r\n              \"status\": {\r\n                \"aboveUpperCritical\": false,\r\n                \"aboveUpperWarning\": false,\r\n                \"belowLowerWarning\": false,\r\n                \"belowLowerCritical\": false\r\n              },\r\n              \"valid\": true,\r\n              \"value\": 59.999999\r\n            }\r\n          },\r\n          \"id\": null\r\n        }",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/inlet/0/voltage"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n          \"jsonrpc\": \"2.0\",\r\n          \"result\": {\r\n            \"_ret_\": {\r\n              \"timestamp\": 980798071,\r\n              \"available\": true,\r\n              \"status\": {\r\n                \"aboveUpperCritical\": false,\r\n                \"aboveUpperWarning\": false,\r\n                \"belowLowerWarning\": false,\r\n                \"belowLowerCritical\": false\r\n              },\r\n              \"valid\": true,\r\n              \"value\": 118.829997\r\n            }\r\n          },\r\n          \"id\": null\r\n        }",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/outlet"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"numberOfOutlets\": 8\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/7"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"available\": true,\r\n            \"powerState\": 1,\r\n            \"switchOnInProgress\": false,\r\n            \"cycleInProgress\": false,\r\n            \"isLoadShed\": false,\r\n            \"ledState\": {\r\n                \"red\": false,\r\n                \"green\": true,\r\n                \"blinking\": false\r\n            },\r\n            \"lastPowerStateChange\": 978460268\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/6"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"available\": true,\r\n            \"powerState\": 1,\r\n            \"switchOnInProgress\": false,\r\n            \"cycleInProgress\": false,\r\n            \"isLoadShed\": false,\r\n            \"ledState\": {\r\n                \"red\": false,\r\n                \"green\": true,\r\n                \"blinking\": false\r\n            },\r\n            \"lastPowerStateChange\": 978460268\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/5"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"available\": true,\r\n            \"powerState\": 1,\r\n            \"switchOnInProgress\": false,\r\n            \"cycleInProgress\": false,\r\n            \"isLoadShed\": false,\r\n            \"ledState\": {\r\n                \"red\": false,\r\n                \"green\": true,\r\n                \"blinking\": false\r\n            },\r\n            \"lastPowerStateChange\": 978460268\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/4"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"available\": true,\r\n            \"powerState\": 1,\r\n            \"switchOnInProgress\": false,\r\n            \"cycleInProgress\": false,\r\n            \"isLoadShed\": false,\r\n            \"ledState\": {\r\n                \"red\": false,\r\n                \"green\": true,\r\n                \"blinking\": false\r\n            },\r\n            \"lastPowerStateChange\": 978460268\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/3"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"available\": true,\r\n            \"powerState\": 1,\r\n            \"switchOnInProgress\": false,\r\n            \"cycleInProgress\": false,\r\n            \"isLoadShed\": false,\r\n            \"ledState\": {\r\n                \"red\": false,\r\n                \"green\": true,\r\n                \"blinking\": false\r\n            },\r\n            \"lastPowerStateChange\": 978460268\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/2"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"available\": true,\r\n            \"powerState\": 1,\r\n            \"switchOnInProgress\": false,\r\n            \"cycleInProgress\": false,\r\n            \"isLoadShed\": false,\r\n            \"ledState\": {\r\n                \"red\": false,\r\n                \"green\": true,\r\n                \"blinking\": false\r\n            },\r\n            \"lastPowerStateChange\": 978460268\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/1"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"available\": true,\r\n            \"powerState\": 1,\r\n            \"switchOnInProgress\": false,\r\n            \"cycleInProgress\": false,\r\n            \"isLoadShed\": false,\r\n            \"ledState\": {\r\n                \"red\": false,\r\n                \"green\": true,\r\n                \"blinking\": false\r\n            },\r\n            \"lastPowerStateChange\": 978460268\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/0"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"available\": true,\r\n            \"powerState\": 1,\r\n            \"switchOnInProgress\": false,\r\n            \"cycleInProgress\": false,\r\n            \"isLoadShed\": false,\r\n            \"ledState\": {\r\n                \"red\": false,\r\n                \"green\": true,\r\n                \"blinking\": false\r\n            },\r\n            \"lastPowerStateChange\": 978460268\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/7/current"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"timestamp\": 980804097,\r\n            \"available\": true,\r\n            \"status\": {\r\n                \"aboveUpperCritical\": false,\r\n                \"aboveUpperWarning\": false,\r\n                \"belowLowerWarning\": false,\r\n                \"belowLowerCritical\": false\r\n            },\r\n            \"valid\": true,\r\n            \"value\": 0.496000\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/6/current"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"timestamp\": 980804097,\r\n            \"available\": true,\r\n            \"status\": {\r\n                \"aboveUpperCritical\": false,\r\n                \"aboveUpperWarning\": false,\r\n                \"belowLowerWarning\": false,\r\n                \"belowLowerCritical\": false\r\n            },\r\n            \"valid\": true,\r\n            \"value\": 0.496000\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/5/current"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"timestamp\": 980804097,\r\n            \"available\": true,\r\n            \"status\": {\r\n                \"aboveUpperCritical\": false,\r\n                \"aboveUpperWarning\": false,\r\n                \"belowLowerWarning\": false,\r\n                \"belowLowerCritical\": false\r\n            },\r\n            \"valid\": true,\r\n            \"value\": 0.496000\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/4/current"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"timestamp\": 980804097,\r\n            \"available\": true,\r\n            \"status\": {\r\n                \"aboveUpperCritical\": false,\r\n                \"aboveUpperWarning\": false,\r\n                \"belowLowerWarning\": false,\r\n                \"belowLowerCritical\": false\r\n            },\r\n            \"valid\": true,\r\n            \"value\": 0.496000\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/3/current"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"timestamp\": 980804097,\r\n            \"available\": true,\r\n            \"status\": {\r\n                \"aboveUpperCritical\": false,\r\n                \"aboveUpperWarning\": false,\r\n                \"belowLowerWarning\": false,\r\n                \"belowLowerCritical\": false\r\n            },\r\n            \"valid\": true,\r\n            \"value\": 0.496000\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/2/current"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"timestamp\": 980804097,\r\n            \"available\": true,\r\n            \"status\": {\r\n                \"aboveUpperCritical\": false,\r\n                \"aboveUpperWarning\": false,\r\n                \"belowLowerWarning\": false,\r\n                \"belowLowerCritical\": false\r\n            },\r\n            \"valid\": true,\r\n            \"value\": 0.496000\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/1/current"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"timestamp\": 980804097,\r\n            \"available\": true,\r\n            \"status\": {\r\n                \"aboveUpperCritical\": false,\r\n                \"aboveUpperWarning\": false,\r\n                \"belowLowerWarning\": false,\r\n                \"belowLowerCritical\": false\r\n            },\r\n            \"valid\": true,\r\n            \"value\": 0.496000\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/0/current"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n    \"jsonrpc\": \"2.0\",\r\n    \"result\": {\r\n        \"_ret_\": {\r\n            \"timestamp\": 980804097,\r\n            \"available\": true,\r\n            \"status\": {\r\n                \"aboveUpperCritical\": false,\r\n                \"aboveUpperWarning\": false,\r\n                \"belowLowerWarning\": false,\r\n                \"belowLowerCritical\": false\r\n            },\r\n            \"valid\": true,\r\n            \"value\": 0.496000\r\n        }\r\n    },\r\n    \"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    }
+  ]
+}
