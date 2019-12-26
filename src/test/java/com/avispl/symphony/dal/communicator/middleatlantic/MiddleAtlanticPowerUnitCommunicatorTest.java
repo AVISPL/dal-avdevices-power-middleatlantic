@@ -19,7 +19,7 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
     static MiddleAtlanticPowerUnitCommunicator middleAtlanticPowerUnitCommunicator;
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(options().port(4001).httpsPort(443)
+    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort().httpsPort(443)
             .basicAdminAuthenticator("admin", "admin").bindAddress("127.0.0.1"));
 
     @BeforeClass
