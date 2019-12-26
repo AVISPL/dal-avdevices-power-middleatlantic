@@ -4,10 +4,7 @@ import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.dal.communicator.HttpCommunicator;
 import com.github.tomakehurst.wiremock.client.BasicCredentials;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.util.List;
 
@@ -19,16 +16,16 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
     static MiddleAtlanticPowerUnitCommunicator middleAtlanticPowerUnitCommunicator;
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort().httpsPort(443)
+    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort().dynamicHttpsPort()
             .basicAdminAuthenticator("admin", "admin").bindAddress("127.0.0.1"));
 
-    @BeforeClass
-    public static void init() throws Exception {
+    @Before
+    public void init() throws Exception {
         middleAtlanticPowerUnitCommunicator = new MiddleAtlanticPowerUnitCommunicator();
         middleAtlanticPowerUnitCommunicator.setTrustAllCertificates(true);
         middleAtlanticPowerUnitCommunicator.setProtocol("https");
         middleAtlanticPowerUnitCommunicator.setContentType("application/json");
-        middleAtlanticPowerUnitCommunicator.setPort(443);
+        middleAtlanticPowerUnitCommunicator.setPort(wireMockRule.httpsPort());
         middleAtlanticPowerUnitCommunicator.setHost("127.0.0.1");
         middleAtlanticPowerUnitCommunicator.setAuthenticationScheme(HttpCommunicator.AuthenticationScheme.Basic);
         middleAtlanticPowerUnitCommunicator.setLogin("admin");
