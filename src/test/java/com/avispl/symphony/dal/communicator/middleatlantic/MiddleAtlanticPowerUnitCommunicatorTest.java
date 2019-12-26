@@ -69,11 +69,7 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
         wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/2/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
         wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/1/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
         wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/0/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
+
+        Assert.assertFalse(statisticsList.isEmpty());
     }
-
-    @Test
-    public void testGetPowerUnitStatistics(){
-
-    }
-
 }
