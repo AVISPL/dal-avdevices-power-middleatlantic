@@ -97,42 +97,34 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
      */
     @Override
     public int ping() throws IOException {
-        long startTime;
-        long endTime;
         long pingResultTotal = 0L;
 
-        Socket puSocketConnection = null;
-        try {
             for(int i = 0; i < this.getPingAttempts(); i++) {
-                startTime = System.currentTimeMillis();
+                long startTime = System.currentTimeMillis();
 
-                puSocketConnection = new Socket(this.getHost(), this.getPort());
-                puSocketConnection.setSoTimeout(this.getPingTimeout());
+                try(Socket puSocketConnection = new Socket(this.getHost(), this.getPort())) {
+                        puSocketConnection.setSoTimeout(this.getPingTimeout());
 
-                if (puSocketConnection.isConnected()) {
-                    endTime = System.currentTimeMillis();
-                    long pingResult = endTime - startTime;
-                    pingResultTotal += pingResult;
-                    if (this.logger.isTraceEnabled()) {
-                        this.logger.trace(String.format("PING OK: Attempt #%s to connect to %s on port %s succeeded in %s ms", i + 1, this.getHost(), this.getPort(), pingResult));
-                    }
-                } else {
+                        if (puSocketConnection.isConnected()) {
+                            long endTime = System.currentTimeMillis();
+                            long pingResult = endTime - startTime;
+                            pingResultTotal += pingResult;
+                            if (this.logger.isTraceEnabled()) {
+                                this.logger.trace(String.format("PING OK: Attempt #%s to connect to %s on port %s succeeded in %s ms", i + 1, this.getHost(), this.getPort(), pingResult));
+                            }
+                        } else {
+                            if (this.logger.isDebugEnabled()) {
+                                this.logger.debug(String.format("PING DISCONNECTED: Connection to %s did not succeed within the timeout period of %sms", this.getHost(), this.getPingTimeout()));
+                            }
+                            return -1;
+                        }
+                } catch (SocketTimeoutException tex){
                     if (this.logger.isDebugEnabled()) {
-                        this.logger.debug(String.format("PING DISCONNECTED: Connection to %s did not succeed within the timeout period of %sms", this.getHost(), this.getPingTimeout()));
+                        this.logger.debug(String.format("PING TIMEOUT: Connection to %s did not succeed within the timeout period of %sms", this.getHost(), this.getPingTimeout()));
                     }
                     return -1;
                 }
             }
-        } catch (SocketTimeoutException tex){
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug(String.format("PING TIMEOUT: Connection to %s did not succeed within the timeout period of %sms", this.getHost(), this.getPingTimeout()));
-            }
-            return -1;
-        } finally {
-            if(puSocketConnection != null){
-                puSocketConnection.close();
-            }
-        }
         return Math.max(1, Math.toIntExact(pingResultTotal / this.getPingAttempts()));
     }
 
