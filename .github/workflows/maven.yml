@@ -10,7 +10,7 @@ jobs:
     - uses: actions/upload-artifact@v1
       with:
         name: middleatlantic
-        path: middleatlantic
+        path: /
     - name: Set up JDK 1.8 & run tests & generate artifacts
       uses: actions/setup-java@v1
       with:
