@@ -42,9 +42,6 @@
                         <include>**/*Test.java</include>
                     </includes>
                     <printSummary>true</printSummary>
-                    <systemPropertyVariables>
-                        <middleAtlanticVersion>${version}</middleAtlanticVersion>
-                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
