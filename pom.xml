@@ -42,6 +42,9 @@
                         <include>**/*Test.java</include>
                     </includes>
                     <printSummary>true</printSummary>
+                    <systemPropertyVariables>
+                        <middleAtlanticVersion>${version}</middleAtlanticVersion>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
@@ -87,6 +90,7 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+
 
         <!--dependencies of symphony-dal-commons-->
         <dependency>
