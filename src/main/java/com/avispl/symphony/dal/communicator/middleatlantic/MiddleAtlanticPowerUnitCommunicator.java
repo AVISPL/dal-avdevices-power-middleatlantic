@@ -37,25 +37,6 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         setTrustAllCertificates(true);
     }
 
-    // FOR LOCAL TESTING
-    public static void main(String[] args) throws Exception {
-        MiddleAtlanticPowerUnitCommunicator device = new MiddleAtlanticPowerUnitCommunicator();
-        device.setTrustAllCertificates(true);
-        device.setProtocol("https");
-        device.setContentType("application/json");
-        device.setPort(443);
-        device.setHost("172.31.254.201");
-        device.setAuthenticationScheme(AuthenticationScheme.Basic);
-        device.setLogin("admin");
-        device.setPassword("admin");
-        device.init();
-
-        long startTime = System.currentTimeMillis();
-        device.getMultipleStatistics();
-        System.out.println("Time = " + (System.currentTimeMillis() - startTime) + " ms");
-        System.out.println("Ping: " + device.ping() + "ms");
-    }
-
     @Override
     protected void authenticate() throws Exception {
         // nothing to do here, authentication is done in individual requests
