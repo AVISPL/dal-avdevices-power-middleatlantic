@@ -17,4 +17,5 @@ jobs:
       run: echo "::set-output name=file::$(ls target/symphony-dal-communicator-middleatlantic-*.jar)"
     - uses: actions/upload-artifact@v1
       with:
+        name: middleatlantic
         path: ${{ steps.getfilename.outputs.file }}
