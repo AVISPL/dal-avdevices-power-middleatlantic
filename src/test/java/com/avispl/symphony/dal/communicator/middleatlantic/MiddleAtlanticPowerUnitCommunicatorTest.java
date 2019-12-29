@@ -1,5 +1,6 @@
 package com.avispl.symphony.dal.communicator.middleatlantic;
 
+import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.dal.communicator.HttpCommunicator;
 import com.github.tomakehurst.wiremock.client.BasicCredentials;
@@ -35,17 +36,12 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
 
     @Test
     public void powerUnitIsPingable() throws Exception {
-        Assert.assertTrue(middleAtlanticPowerUnitCommunicator.ping() > -1);
-        Assert.assertTrue(middleAtlanticPowerUnitCommunicator.ping() < 1000);
-    }
-
-//    @Test
-    public void powerUnitThreadPoolIsRepeatedlyExecutable() {
-
+        int pingResult = middleAtlanticPowerUnitCommunicator.ping();
+        Assert.assertTrue( pingResult < 1000 && pingResult > -1);
     }
 
     @Test
-    public void checkPowerUnitStatistics() throws Exception {
+    public void verifyPowerUnitStatistics() throws Exception {
         List<Statistics> statisticsList = middleAtlanticPowerUnitCommunicator.getMultipleStatistics();
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/inlet/0/activePower")).withBasicAuth(new BasicCredentials("admin", "admin")));
@@ -71,5 +67,18 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
         wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/0/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
 
         Assert.assertFalse(statisticsList.isEmpty());
+        Assert.assertFalse(((ExtendedStatistics)statisticsList.get(0)).getStatistics().isEmpty());
+    }
+
+
+    @Test
+    public void powerUnitThreadPoolIsRepeatedlyExecutable() throws Exception {
+        List<Statistics> statisticsListFirstCall = middleAtlanticPowerUnitCommunicator.getMultipleStatistics();
+        List<Statistics> statisticsListSecondCall = middleAtlanticPowerUnitCommunicator.getMultipleStatistics();
+
+        Assert.assertFalse(statisticsListFirstCall.isEmpty());
+        Assert.assertFalse(((ExtendedStatistics)statisticsListFirstCall.get(0)).getStatistics().isEmpty());
+        Assert.assertFalse(statisticsListSecondCall.isEmpty());
+        Assert.assertFalse(((ExtendedStatistics)statisticsListSecondCall.get(0)).getStatistics().isEmpty());
     }
 }
