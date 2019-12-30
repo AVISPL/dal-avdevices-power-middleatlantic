@@ -1,11 +1,14 @@
 package com.avispl.symphony.dal.communicator.middleatlantic;
 
+import com.atlassian.ta.wiremockpactgenerator.WireMockPactGenerator;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.dal.communicator.HttpCommunicator;
-import com.github.tomakehurst.wiremock.client.BasicCredentials;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 import java.util.List;
 
@@ -19,6 +22,12 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort().dynamicHttpsPort()
             .basicAdminAuthenticator("admin", "admin").bindAddress("127.0.0.1"));
+
+    {
+        wireMockRule.addMockServiceRequestListener(WireMockPactGenerator
+                .builder("middle-atlantic-power-unit-adapter", "middle-atlantic-power-unit")
+                .withRequestHeaderWhitelist("authorization", "content-type").build());
+    }
 
     @Before
     public void init() throws Exception {
@@ -44,27 +53,27 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
     public void verifyPowerUnitStatistics() throws Exception {
         List<Statistics> statisticsList = middleAtlanticPowerUnitCommunicator.getMultipleStatistics();
 
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/inlet/0/activePower")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/inlet/0/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/inlet/0/lineFrequency")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/inlet/0/voltage")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/outlet")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/7")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/6")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/5")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/4")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/3")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/2")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/1")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/0")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/7/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/6/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/5/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/4/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/3/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/2/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/1/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
-        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/0/current")).withBasicAuth(new BasicCredentials("admin", "admin")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/inlet/0/activePower")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/inlet/0/current")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/inlet/0/lineFrequency")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/inlet/0/voltage")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/outlet")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/7")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/6")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/5")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/4")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/3")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/2")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/1")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/0")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/7/current")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/6/current")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/5/current")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/4/current")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/3/current")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/2/current")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/1/current")));
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/0/current")));
 
         Assert.assertFalse(statisticsList.isEmpty());
         Assert.assertFalse(((ExtendedStatistics)statisticsList.get(0)).getStatistics().isEmpty());
@@ -81,4 +90,5 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
         Assert.assertFalse(statisticsListSecondCall.isEmpty());
         Assert.assertFalse(((ExtendedStatistics)statisticsListSecondCall.get(0)).getStatistics().isEmpty());
     }
+
 }

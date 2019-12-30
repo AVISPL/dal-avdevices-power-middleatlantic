@@ -3,7 +3,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/inlet/0/activePower"
+        "url": "/model/pdu/0/inlet/0/activePower",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -16,7 +20,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/inlet/0/current"
+        "url": "/model/pdu/0/inlet/0/current",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -29,7 +37,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/inlet/0/lineFrequency"
+        "url": "/model/pdu/0/inlet/0/lineFrequency",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -42,7 +54,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/inlet/0/voltage"
+        "url": "/model/pdu/0/inlet/0/voltage",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -55,7 +71,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/outlet"
+        "url": "/model/outlet",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -68,7 +88,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/7"
+        "url": "/model/pdu/0/outlet/7",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -81,7 +105,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/6"
+        "url": "/model/pdu/0/outlet/6",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -94,7 +122,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/5"
+        "url": "/model/pdu/0/outlet/5",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -107,7 +139,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/4"
+        "url": "/model/pdu/0/outlet/4",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -120,7 +156,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/3"
+        "url": "/model/pdu/0/outlet/3",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -133,7 +173,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/2"
+        "url": "/model/pdu/0/outlet/2",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -146,7 +190,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/1"
+        "url": "/model/pdu/0/outlet/1",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -159,7 +207,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/0"
+        "url": "/model/pdu/0/outlet/0",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -172,7 +224,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/7/current"
+        "url": "/model/pdu/0/outlet/7/current",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -185,7 +241,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/6/current"
+        "url": "/model/pdu/0/outlet/6/current",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -198,7 +258,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/5/current"
+        "url": "/model/pdu/0/outlet/5/current",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -211,7 +275,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/4/current"
+        "url": "/model/pdu/0/outlet/4/current",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -224,7 +292,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/3/current"
+        "url": "/model/pdu/0/outlet/3/current",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -237,7 +309,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/2/current"
+        "url": "/model/pdu/0/outlet/2/current",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -250,7 +326,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/1/current"
+        "url": "/model/pdu/0/outlet/1/current",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
@@ -263,7 +343,11 @@
     {
       "request": {
         "method": "POST",
-        "url": "/model/pdu/0/outlet/0/current"
+        "url": "/model/pdu/0/outlet/0/current",
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
       },
       "response": {
         "status": 200,
