@@ -9,7 +9,9 @@ import au.com.dius.pact.provider.junit5.PactVerificationContext;
 import au.com.dius.pact.provider.junit5.PactVerificationInvocationContextProvider;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.apache.http.HttpRequest;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -17,6 +19,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 
 @Provider("middle-atlantic-power-unit")
 @PactFolder("pacts/")
+@Tag("localtest")
 public class MiddleAtlanticPowerUnitContractProviderTest {
     private static final int POWER_UNIT_PORT = 443;
     private static final String POWER_UNIT_IP_ADDRESS = "172.31.254.201";
@@ -24,10 +27,10 @@ public class MiddleAtlanticPowerUnitContractProviderTest {
     private static final String POWER_UNIT_TEST_USERNAME = "admin";
     private static final String POWER_UNIT_TEST_PASSWORD = "admin";
 
-    private WireMockServer wireMockServer;
+    private static WireMockServer wireMockServer;
 
-    @BeforeEach
-    public void setup(){
+    @BeforeAll
+    public static void setup(){
         wireMockServer = new WireMockServer(options().dynamicPort().dynamicHttpsPort()
                 .basicAdminAuthenticator(POWER_UNIT_TEST_USERNAME, POWER_UNIT_TEST_PASSWORD).bindAddress(LOCAL_IP_ADDRESS));
         wireMockServer.start();

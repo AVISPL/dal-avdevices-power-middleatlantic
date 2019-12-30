@@ -6,9 +6,10 @@ import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.dal.communicator.HttpCommunicator;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
+@Tag("test")
 public class MiddleAtlanticPowerUnitCommunicatorTest {
     static MiddleAtlanticPowerUnitCommunicator middleAtlanticPowerUnitCommunicator;
 
@@ -27,9 +29,10 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
         wireMockRule.addMockServiceRequestListener(WireMockPactGenerator
                 .builder("middle-atlantic-power-unit-adapter", "middle-atlantic-power-unit")
                 .withRequestHeaderWhitelist("authorization", "content-type").build());
+        wireMockRule.start();
     }
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         middleAtlanticPowerUnitCommunicator = new MiddleAtlanticPowerUnitCommunicator();
         middleAtlanticPowerUnitCommunicator.setTrustAllCertificates(true);
