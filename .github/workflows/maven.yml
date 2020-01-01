@@ -11,6 +11,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
+    - name: PMD check
+      run: mvn pmd:check
     - name: Build and test with Maven
       run: mvn -B clean test install
     - id: getfilename

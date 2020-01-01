@@ -7,8 +7,6 @@ import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.api.dal.monitor.Monitorable;
 import com.avispl.symphony.dal.communicator.RestCommunicator;
 import com.google.common.collect.ImmutableMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
@@ -22,10 +20,9 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 
 public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implements Monitorable, Controller {
 
-    private final Log log = LogFactory.getLog(this.getClass());
-    private final String BASE_URI = "model/pdu/0";
-    private final String OUTLET = "Outlet";
-    private final String GET_READING = "getReading";
+    private static final String OUTLET = "Outlet";
+    private static final String BASE_URI = "model/pdu/0";
+    private static final String GET_READING = "getReading";
 
     /**
      * MiddleAtlanticPowerUnit constructor.
@@ -150,14 +147,14 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
 
     private String call(String url, String method) {
         try {
-            return (((Map) ((Map) doPost(BASE_URI + url,
+            return ((Map) ((Map) doPost(BASE_URI + url,
                     ImmutableMap.of(
                             "jsonrpc", "2.0",
                             "method", method),
                     Map.class)
                     .get("result"))
                     .get("_ret_"))
-                    .get("value").toString());
+                    .get("value").toString();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -180,9 +177,11 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
             try {
                 setOutletState(controllableProperty);
             } catch (Exception e) {
-                log.error("controlProperty property=" + controllableProperty.getProperty()
-                        + "value=" + controllableProperty.getValue() +
-                        " deviceId=" + controllableProperty.getDeviceId(), e);
+                if(this.logger.isErrorEnabled()) {
+                    this.logger.error("controlProperty property=" + controllableProperty.getProperty()
+                            + "value=" + controllableProperty.getValue() +
+                            " deviceId=" + controllableProperty.getDeviceId(), e);
+                }
             }
         });
     }
@@ -195,7 +194,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         String data = "{\"jsonrpc\":\"2.0\",\"method\":\"setPowerState\",\"params\":{\"pstate\":" + controllableProperty.getValue() + "}}";
         try {
             Map map = doPost(uri, data, Map.class);
-            log.info(map.toString());
+            this.logger.info(map.toString());
 
             response = ((Map) doPost(uri, data, Map.class)
                     .get("result"))
@@ -204,22 +203,28 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         } catch (Exception e) {
             throw new Exception("SetPowerState method doesn't not work at the URI " + uri, e);
         }
+        if(!this.logger.isInfoEnabled()){
+            return;
+        }
         int responseCode = Integer.parseInt(response);
         switch (responseCode) {
             case 0:
-                log.info("SetPowerState method for Outlet " + outletNumber + " works, response is good");
+                this.logger.info("SetPowerState method for Outlet " + outletNumber + " works, response is good");
                 break;
             case 1:
-                log.info("SetPowerState method for Outlet " + outletNumber + " error: OUTLET NOT SWITCHABLE");
+                this.logger.info("SetPowerState method for Outlet " + outletNumber + " error: OUTLET NOT SWITCHABLE");
                 break;
             case 2:
-                log.info("SetPowerState method for Outlet " + outletNumber + " error: LOAD SHEDDING ACTIVE");
+                this.logger.info("SetPowerState method for Outlet " + outletNumber + " error: LOAD SHEDDING ACTIVE");
                 break;
             case 3:
-                log.info("SetPowerState method for Outlet " + outletNumber + " error: OUTLET DISABLED");
+                this.logger.info("SetPowerState method for Outlet " + outletNumber + " error: OUTLET DISABLED");
                 break;
             case 4:
-                log.info("SetPowerState method for Outlet " + outletNumber + " error: OUTLET NOT OFF");
+                this.logger.info("SetPowerState method for Outlet " + outletNumber + " error: OUTLET NOT OFF");
+                break;
+            default:
+                this.logger.info("Unknown responseCode " + responseCode + " is returned for SetPowerState method for Outlet " + outletNumber);
                 break;
         }
     }
