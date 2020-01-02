@@ -64,6 +64,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
 
         extendedStatistics.setStatistics(statistics);
         extendedStatistics.setControl(control);
+
         return new ArrayList<>(Arrays.asList(extendedStatistics));
     }
 
@@ -140,6 +141,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         int displayOutletNumber = outletNumber + 1;
         return String.format("%s %d %s", OUTLET, displayOutletNumber, "RMS Current");
     }
+
 
     private void fillInStatistics(Map<String, String> statistics, String fieldName, String url, String method) {
         Optional.ofNullable(call(url, method)).ifPresent(response -> statistics.put(fieldName, response));
