@@ -356,6 +356,50 @@
           "Content-Type": "application/json"
         }
       }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/0",
+        "bodyPatterns": [
+          {
+            "equalToJson": "{\"jsonrpc\":\"2.0\",\"method\":\"setPowerState\",\"params\":{\"pstate\":1}}"
+          }
+        ],
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n\"jsonrpc\": \"2.0\",\r\n\"result\": {\r\n\"_ret_\": 0\r\n},\r\n\"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "/model/pdu/0/outlet/0",
+        "bodyPatterns": [
+          {
+            "equalToJson": "{\"jsonrpc\":\"2.0\",\"method\":\"setPowerState\",\"params\":{\"pstate\":0}}"
+          }
+        ],
+        "basicAuth": {
+          "username": "admin",
+          "password": "admin"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\r\n\"jsonrpc\": \"2.0\",\r\n\"result\": {\r\n\"_ret_\": 0\r\n},\r\n\"id\": null\r\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
     }
   ]
 }

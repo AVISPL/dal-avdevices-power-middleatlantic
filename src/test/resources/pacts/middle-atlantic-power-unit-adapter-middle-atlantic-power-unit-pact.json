@@ -7,6 +7,42 @@
   },
   "interactions": [
     {
+      "description": "POST /model/pdu/0/outlet/0 -> 200",
+      "request": {
+        "method": "POST",
+        "path": "/model/pdu/0/outlet/0",
+        "headers": {
+          "authorization": "Basic YWRtaW46YWRtaW4=",
+          "content-type": "application/json"
+        },
+        "body": {
+          "jsonrpc": "2.0",
+          "method": "setPowerState",
+          "params": {
+            "pstate": 1
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "jsonrpc": "2.0",
+          "result": {
+            "_ret_": 0
+          },
+          "id": null
+        },
+        "matchingRules": {
+          "$.body.result._ret_": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
       "description": "POST /model/pdu/0/inlet/0/activePower -> 200",
       "request": {
         "method": "POST",
@@ -16,8 +52,8 @@
           "content-type": "application/json"
         },
         "body": {
-          "jsonrpc": "2.0",
-          "method": "getReading"
+          "method": "getReading",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -60,8 +96,8 @@
           "content-type": "application/json"
         },
         "body": {
-          "jsonrpc": "2.0",
-          "method": "getReading"
+          "method": "getReading",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -104,8 +140,8 @@
           "content-type": "application/json"
         },
         "body": {
-          "jsonrpc": "2.0",
-          "method": "getReading"
+          "method": "getReading",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -148,8 +184,8 @@
           "content-type": "application/json"
         },
         "body": {
-          "jsonrpc": "2.0",
-          "method": "getReading"
+          "method": "getReading",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -214,51 +250,6 @@
       }
     },
     {
-      "description": "POST /model/pdu/0/outlet/5 -> 200",
-      "request": {
-        "method": "POST",
-        "path": "/model/pdu/0/outlet/5",
-        "headers": {
-          "authorization": "Basic YWRtaW46YWRtaW4=",
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "method": "getState"
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "result": {
-            "_ret_": {
-              "available": true,
-              "powerState": 1,
-              "switchOnInProgress": false,
-              "cycleInProgress": false,
-              "isLoadShed": false,
-              "ledState": {
-                "red": false,
-                "green": true,
-                "blinking": false
-              },
-              "lastPowerStateChange": 978460268
-            }
-          },
-          "id": null
-        },
-        "matchingRules": {
-          "$.body.result._ret_": {
-            "match": "type"
-          }
-        }
-      }
-    },
-    {
       "description": "POST /model/pdu/0/outlet/2 -> 200",
       "request": {
         "method": "POST",
@@ -268,8 +259,8 @@
           "content-type": "application/json"
         },
         "body": {
-          "jsonrpc": "2.0",
-          "method": "getState"
+          "method": "getState",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -304,152 +295,17 @@
       }
     },
     {
-      "description": "POST /model/pdu/0/outlet/1 -> 200",
+      "description": "POST /model/pdu/0/outlet/5 -> 200",
       "request": {
         "method": "POST",
-        "path": "/model/pdu/0/outlet/1",
+        "path": "/model/pdu/0/outlet/5",
         "headers": {
           "authorization": "Basic YWRtaW46YWRtaW4=",
           "content-type": "application/json"
         },
         "body": {
-          "jsonrpc": "2.0",
-          "method": "getState"
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "result": {
-            "_ret_": {
-              "available": true,
-              "powerState": 1,
-              "switchOnInProgress": false,
-              "cycleInProgress": false,
-              "isLoadShed": false,
-              "ledState": {
-                "red": false,
-                "green": true,
-                "blinking": false
-              },
-              "lastPowerStateChange": 978460268
-            }
-          },
-          "id": null
-        },
-        "matchingRules": {
-          "$.body.result._ret_": {
-            "match": "type"
-          }
-        }
-      }
-    },
-    {
-      "description": "POST /model/pdu/0/outlet/6 -> 200",
-      "request": {
-        "method": "POST",
-        "path": "/model/pdu/0/outlet/6",
-        "headers": {
-          "authorization": "Basic YWRtaW46YWRtaW4=",
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "method": "getState"
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "result": {
-            "_ret_": {
-              "available": true,
-              "powerState": 1,
-              "switchOnInProgress": false,
-              "cycleInProgress": false,
-              "isLoadShed": false,
-              "ledState": {
-                "red": false,
-                "green": true,
-                "blinking": false
-              },
-              "lastPowerStateChange": 978460268
-            }
-          },
-          "id": null
-        },
-        "matchingRules": {
-          "$.body.result._ret_": {
-            "match": "type"
-          }
-        }
-      }
-    },
-    {
-      "description": "POST /model/pdu/0/outlet/4 -> 200",
-      "request": {
-        "method": "POST",
-        "path": "/model/pdu/0/outlet/4",
-        "headers": {
-          "authorization": "Basic YWRtaW46YWRtaW4=",
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "method": "getState"
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "result": {
-            "_ret_": {
-              "available": true,
-              "powerState": 1,
-              "switchOnInProgress": false,
-              "cycleInProgress": false,
-              "isLoadShed": false,
-              "ledState": {
-                "red": false,
-                "green": true,
-                "blinking": false
-              },
-              "lastPowerStateChange": 978460268
-            }
-          },
-          "id": null
-        },
-        "matchingRules": {
-          "$.body.result._ret_": {
-            "match": "type"
-          }
-        }
-      }
-    },
-    {
-      "description": "POST /model/pdu/0/outlet/7 -> 200",
-      "request": {
-        "method": "POST",
-        "path": "/model/pdu/0/outlet/7",
-        "headers": {
-          "authorization": "Basic YWRtaW46YWRtaW4=",
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "method": "getState"
+          "method": "getState",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -493,8 +349,8 @@
           "content-type": "application/json"
         },
         "body": {
-          "jsonrpc": "2.0",
-          "method": "getState"
+          "method": "getState",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -538,8 +394,8 @@
           "content-type": "application/json"
         },
         "body": {
-          "jsonrpc": "2.0",
-          "method": "getState"
+          "method": "getState",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -574,17 +430,197 @@
       }
     },
     {
-      "description": "POST /model/pdu/0/outlet/5/current -> 200",
+      "description": "POST /model/pdu/0/outlet/6 -> 200",
       "request": {
         "method": "POST",
-        "path": "/model/pdu/0/outlet/5/current",
+        "path": "/model/pdu/0/outlet/6",
         "headers": {
           "authorization": "Basic YWRtaW46YWRtaW4=",
           "content-type": "application/json"
         },
         "body": {
+          "method": "getState",
+          "jsonrpc": "2.0"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
           "jsonrpc": "2.0",
-          "method": "getReading"
+          "result": {
+            "_ret_": {
+              "available": true,
+              "powerState": 1,
+              "switchOnInProgress": false,
+              "cycleInProgress": false,
+              "isLoadShed": false,
+              "ledState": {
+                "red": false,
+                "green": true,
+                "blinking": false
+              },
+              "lastPowerStateChange": 978460268
+            }
+          },
+          "id": null
+        },
+        "matchingRules": {
+          "$.body.result._ret_": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "POST /model/pdu/0/outlet/1 -> 200",
+      "request": {
+        "method": "POST",
+        "path": "/model/pdu/0/outlet/1",
+        "headers": {
+          "authorization": "Basic YWRtaW46YWRtaW4=",
+          "content-type": "application/json"
+        },
+        "body": {
+          "method": "getState",
+          "jsonrpc": "2.0"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "jsonrpc": "2.0",
+          "result": {
+            "_ret_": {
+              "available": true,
+              "powerState": 1,
+              "switchOnInProgress": false,
+              "cycleInProgress": false,
+              "isLoadShed": false,
+              "ledState": {
+                "red": false,
+                "green": true,
+                "blinking": false
+              },
+              "lastPowerStateChange": 978460268
+            }
+          },
+          "id": null
+        },
+        "matchingRules": {
+          "$.body.result._ret_": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "POST /model/pdu/0/outlet/7 -> 200",
+      "request": {
+        "method": "POST",
+        "path": "/model/pdu/0/outlet/7",
+        "headers": {
+          "authorization": "Basic YWRtaW46YWRtaW4=",
+          "content-type": "application/json"
+        },
+        "body": {
+          "method": "getState",
+          "jsonrpc": "2.0"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "jsonrpc": "2.0",
+          "result": {
+            "_ret_": {
+              "available": true,
+              "powerState": 1,
+              "switchOnInProgress": false,
+              "cycleInProgress": false,
+              "isLoadShed": false,
+              "ledState": {
+                "red": false,
+                "green": true,
+                "blinking": false
+              },
+              "lastPowerStateChange": 978460268
+            }
+          },
+          "id": null
+        },
+        "matchingRules": {
+          "$.body.result._ret_": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "POST /model/pdu/0/outlet/4 -> 200",
+      "request": {
+        "method": "POST",
+        "path": "/model/pdu/0/outlet/4",
+        "headers": {
+          "authorization": "Basic YWRtaW46YWRtaW4=",
+          "content-type": "application/json"
+        },
+        "body": {
+          "method": "getState",
+          "jsonrpc": "2.0"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "jsonrpc": "2.0",
+          "result": {
+            "_ret_": {
+              "available": true,
+              "powerState": 1,
+              "switchOnInProgress": false,
+              "cycleInProgress": false,
+              "isLoadShed": false,
+              "ledState": {
+                "red": false,
+                "green": true,
+                "blinking": false
+              },
+              "lastPowerStateChange": 978460268
+            }
+          },
+          "id": null
+        },
+        "matchingRules": {
+          "$.body.result._ret_": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "POST /model/pdu/0/outlet/1/current -> 200",
+      "request": {
+        "method": "POST",
+        "path": "/model/pdu/0/outlet/1/current",
+        "headers": {
+          "authorization": "Basic YWRtaW46YWRtaW4=",
+          "content-type": "application/json"
+        },
+        "body": {
+          "method": "getReading",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -627,8 +663,8 @@
           "content-type": "application/json"
         },
         "body": {
-          "jsonrpc": "2.0",
-          "method": "getReading"
+          "method": "getReading",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -662,149 +698,17 @@
       }
     },
     {
-      "description": "POST /model/pdu/0/outlet/1/current -> 200",
+      "description": "POST /model/pdu/0/outlet/5/current -> 200",
       "request": {
         "method": "POST",
-        "path": "/model/pdu/0/outlet/1/current",
+        "path": "/model/pdu/0/outlet/5/current",
         "headers": {
           "authorization": "Basic YWRtaW46YWRtaW4=",
           "content-type": "application/json"
         },
         "body": {
-          "jsonrpc": "2.0",
-          "method": "getReading"
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "result": {
-            "_ret_": {
-              "timestamp": 980804097,
-              "available": true,
-              "status": {
-                "aboveUpperCritical": false,
-                "aboveUpperWarning": false,
-                "belowLowerWarning": false,
-                "belowLowerCritical": false
-              },
-              "valid": true,
-              "value": 0.496000
-            }
-          },
-          "id": null
-        },
-        "matchingRules": {
-          "$.body.result._ret_": {
-            "match": "type"
-          }
-        }
-      }
-    },
-    {
-      "description": "POST /model/pdu/0/outlet/6/current -> 200",
-      "request": {
-        "method": "POST",
-        "path": "/model/pdu/0/outlet/6/current",
-        "headers": {
-          "authorization": "Basic YWRtaW46YWRtaW4=",
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "method": "getReading"
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "result": {
-            "_ret_": {
-              "timestamp": 980804097,
-              "available": true,
-              "status": {
-                "aboveUpperCritical": false,
-                "aboveUpperWarning": false,
-                "belowLowerWarning": false,
-                "belowLowerCritical": false
-              },
-              "valid": true,
-              "value": 0.496000
-            }
-          },
-          "id": null
-        },
-        "matchingRules": {
-          "$.body.result._ret_": {
-            "match": "type"
-          }
-        }
-      }
-    },
-    {
-      "description": "POST /model/pdu/0/outlet/4/current -> 200",
-      "request": {
-        "method": "POST",
-        "path": "/model/pdu/0/outlet/4/current",
-        "headers": {
-          "authorization": "Basic YWRtaW46YWRtaW4=",
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "method": "getReading"
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "result": {
-            "_ret_": {
-              "timestamp": 980804097,
-              "available": true,
-              "status": {
-                "aboveUpperCritical": false,
-                "aboveUpperWarning": false,
-                "belowLowerWarning": false,
-                "belowLowerCritical": false
-              },
-              "valid": true,
-              "value": 0.496000
-            }
-          },
-          "id": null
-        },
-        "matchingRules": {
-          "$.body.result._ret_": {
-            "match": "type"
-          }
-        }
-      }
-    },
-    {
-      "description": "POST /model/pdu/0/outlet/7/current -> 200",
-      "request": {
-        "method": "POST",
-        "path": "/model/pdu/0/outlet/7/current",
-        "headers": {
-          "authorization": "Basic YWRtaW46YWRtaW4=",
-          "content-type": "application/json"
-        },
-        "body": {
-          "jsonrpc": "2.0",
-          "method": "getReading"
+          "method": "getReading",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -847,8 +751,8 @@
           "content-type": "application/json"
         },
         "body": {
-          "jsonrpc": "2.0",
-          "method": "getReading"
+          "method": "getReading",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -891,8 +795,8 @@
           "content-type": "application/json"
         },
         "body": {
-          "jsonrpc": "2.0",
-          "method": "getReading"
+          "method": "getReading",
+          "jsonrpc": "2.0"
         }
       },
       "response": {
@@ -915,6 +819,174 @@
               "valid": true,
               "value": 0.496000
             }
+          },
+          "id": null
+        },
+        "matchingRules": {
+          "$.body.result._ret_": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "POST /model/pdu/0/outlet/6/current -> 200",
+      "request": {
+        "method": "POST",
+        "path": "/model/pdu/0/outlet/6/current",
+        "headers": {
+          "authorization": "Basic YWRtaW46YWRtaW4=",
+          "content-type": "application/json"
+        },
+        "body": {
+          "method": "getReading",
+          "jsonrpc": "2.0"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "jsonrpc": "2.0",
+          "result": {
+            "_ret_": {
+              "timestamp": 980804097,
+              "available": true,
+              "status": {
+                "aboveUpperCritical": false,
+                "aboveUpperWarning": false,
+                "belowLowerWarning": false,
+                "belowLowerCritical": false
+              },
+              "valid": true,
+              "value": 0.496000
+            }
+          },
+          "id": null
+        },
+        "matchingRules": {
+          "$.body.result._ret_": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "POST /model/pdu/0/outlet/7/current -> 200",
+      "request": {
+        "method": "POST",
+        "path": "/model/pdu/0/outlet/7/current",
+        "headers": {
+          "authorization": "Basic YWRtaW46YWRtaW4=",
+          "content-type": "application/json"
+        },
+        "body": {
+          "method": "getReading",
+          "jsonrpc": "2.0"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "jsonrpc": "2.0",
+          "result": {
+            "_ret_": {
+              "timestamp": 980804097,
+              "available": true,
+              "status": {
+                "aboveUpperCritical": false,
+                "aboveUpperWarning": false,
+                "belowLowerWarning": false,
+                "belowLowerCritical": false
+              },
+              "valid": true,
+              "value": 0.496000
+            }
+          },
+          "id": null
+        },
+        "matchingRules": {
+          "$.body.result._ret_": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "POST /model/pdu/0/outlet/4/current -> 200",
+      "request": {
+        "method": "POST",
+        "path": "/model/pdu/0/outlet/4/current",
+        "headers": {
+          "authorization": "Basic YWRtaW46YWRtaW4=",
+          "content-type": "application/json"
+        },
+        "body": {
+          "method": "getReading",
+          "jsonrpc": "2.0"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "jsonrpc": "2.0",
+          "result": {
+            "_ret_": {
+              "timestamp": 980804097,
+              "available": true,
+              "status": {
+                "aboveUpperCritical": false,
+                "aboveUpperWarning": false,
+                "belowLowerWarning": false,
+                "belowLowerCritical": false
+              },
+              "valid": true,
+              "value": 0.496000
+            }
+          },
+          "id": null
+        },
+        "matchingRules": {
+          "$.body.result._ret_": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "POST /model/pdu/0/outlet/0 -> 200",
+      "request": {
+        "method": "POST",
+        "path": "/model/pdu/0/outlet/0",
+        "headers": {
+          "authorization": "Basic YWRtaW46YWRtaW4=",
+          "content-type": "application/json"
+        },
+        "body": {
+          "jsonrpc": "2.0",
+          "method": "setPowerState",
+          "params": {
+            "pstate": 0
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "jsonrpc": "2.0",
+          "result": {
+            "_ret_": 0
           },
           "id": null
         },

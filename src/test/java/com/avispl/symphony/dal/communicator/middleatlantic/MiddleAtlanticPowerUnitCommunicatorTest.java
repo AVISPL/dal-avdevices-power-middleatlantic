@@ -1,6 +1,7 @@
 package com.avispl.symphony.dal.communicator.middleatlantic;
 
 import com.atlassian.ta.wiremockpactgenerator.WireMockPactGenerator;
+import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.dal.communicator.HttpCommunicator;
@@ -16,6 +17,7 @@ import java.util.List;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static java.lang.Thread.sleep;
 
 @Tag("test")
 public class MiddleAtlanticPowerUnitCommunicatorTest {
@@ -82,7 +84,6 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
         Assert.assertFalse(((ExtendedStatistics)statisticsList.get(0)).getStatistics().isEmpty());
     }
 
-
     @Test
     public void powerUnitThreadPoolIsRepeatedlyExecutable() throws Exception {
         List<Statistics> statisticsListFirstCall = middleAtlanticPowerUnitCommunicator.getMultipleStatistics();
@@ -94,4 +95,27 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
         Assert.assertFalse(((ExtendedStatistics)statisticsListSecondCall.get(0)).getStatistics().isEmpty());
     }
 
+    @Test
+    public void verifyPowerStateControlON() throws InterruptedException {
+        ControllableProperty controllablePropertyPowerStateON = new ControllableProperty();
+        controllablePropertyPowerStateON.setDeviceId("deviceId");
+        controllablePropertyPowerStateON.setProperty("1");
+        controllablePropertyPowerStateON.setValue(1);
+
+       middleAtlanticPowerUnitCommunicator.controlProperty(controllablePropertyPowerStateON);
+       sleep(1000);
+       wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/0")));
+    }
+
+    @Test
+    public void verifyPowerStateControlOFF() throws InterruptedException {
+        ControllableProperty controllablePropertyPowerStateOFF = new ControllableProperty();
+        controllablePropertyPowerStateOFF.setDeviceId("deviceId");
+        controllablePropertyPowerStateOFF.setProperty("1");
+        controllablePropertyPowerStateOFF.setValue(0);
+
+        middleAtlanticPowerUnitCommunicator.controlProperty(controllablePropertyPowerStateOFF);
+        sleep(1000);
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/0")));
+    }
 }

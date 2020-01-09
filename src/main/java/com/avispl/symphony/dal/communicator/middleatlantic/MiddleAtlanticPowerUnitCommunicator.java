@@ -6,7 +6,7 @@ import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.api.dal.monitor.Monitorable;
 import com.avispl.symphony.dal.communicator.RestCommunicator;
-import com.google.common.collect.ImmutableMap;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
@@ -109,22 +109,26 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
 
     private int getOutletsCount() {
         try {
-            Map result = doPost("model/outlet", null, Map.class);
-            return (int) ((Map) ((Map) result.get("result")).get("_ret_")).get("numberOfOutlets");
+            return doPostFiltered("model/outlet", null, "numberOfOutlets").asInt();
         } catch (Exception e) {
             throw new RuntimeException("Method doesn't not work at the URI " + BASE_URI + "/model/outlet", e);
         }
     }
 
+    private JsonNode doPostFiltered(String url, Object data, String path) throws Exception {
+        return doPost(url, data, JsonNode.class)
+                .findPath(path);
+    }
+
+
     private void fillInOutletState(Map<String, String> statistics, Map<String, String> control, int outletNumber) {
         try {
-            Map result = doPost(BASE_URI + "/outlet/" + outletNumber,
-                    ImmutableMap.of(
-                            "jsonrpc", "2.0",
-                            "method", "getState"), Map.class);
-            if ((boolean) ((Map) ((Map) result.get("result")).get("_ret_")).get("available")) {
+            JsonNode result = doPost(BASE_URI + "/outlet/" + outletNumber,
+                    prepareRPCRequest("getState"), JsonNode.class);
+
+            if (result.findPath("available").asBoolean()) {
                 statistics.put(getOutletDisplayName(outletNumber),
-                        String.valueOf((int) ((Map) ((Map) result.get("result")).get("_ret_")).get("powerState") == 1));
+                        String.valueOf(result.findPath("powerState").asInt() == 1));
                 control.put(getOutletDisplayName(outletNumber), "Toggle");
             }
         } catch (Exception e) {
@@ -142,24 +146,23 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         return String.format("%s %d %s", OUTLET, displayOutletNumber, "RMS Current");
     }
 
-
     private void fillInStatistics(Map<String, String> statistics, String fieldName, String url, String method) {
         Optional.ofNullable(call(url, method)).ifPresent(response -> statistics.put(fieldName, response));
     }
 
     private String call(String url, String method) {
         try {
-            return ((Map) ((Map) doPost(BASE_URI + url,
-                    ImmutableMap.of(
-                            "jsonrpc", "2.0",
-                            "method", method),
-                    Map.class)
-                    .get("result"))
-                    .get("_ret_"))
-                    .get("value").toString();
+            return doPostFiltered(BASE_URI + url, prepareRPCRequest(method), "value").asText();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Map prepareRPCRequest(String method){
+        Map<String, String> rpcRequest = new HashMap();
+        rpcRequest.put("jsonrpc", "2.0");
+        rpcRequest.put("method", method);
+        return rpcRequest;
     }
 
     @Override
@@ -193,15 +196,10 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         String property = controllableProperty.getProperty();
         int outletNumber = Integer.parseInt(String.valueOf(property.charAt(property.length() - 1)));
         String uri = BASE_URI + "/outlet/" + (outletNumber - 1);
+
         String data = "{\"jsonrpc\":\"2.0\",\"method\":\"setPowerState\",\"params\":{\"pstate\":" + controllableProperty.getValue() + "}}";
         try {
-            Map map = doPost(uri, data, Map.class);
-            this.logger.info(map.toString());
-
-            response = ((Map) doPost(uri, data, Map.class)
-                    .get("result"))
-                    .get("_ret_")
-                    .toString();
+            response = doPostFiltered(uri, data, "_ret_").asText();
         } catch (Exception e) {
             throw new Exception("SetPowerState method doesn't not work at the URI " + uri, e);
         }

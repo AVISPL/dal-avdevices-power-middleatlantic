@@ -37,9 +37,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.19.1</version> <!-- Specific due to memory leak in 2.20 -->
-                <configuration>
-                    <groups>test</groups>
-                </configuration>
                 <dependencies>
                     <!--Custom provider and engine for Junit 5 to surefire-->
                     <dependency>
