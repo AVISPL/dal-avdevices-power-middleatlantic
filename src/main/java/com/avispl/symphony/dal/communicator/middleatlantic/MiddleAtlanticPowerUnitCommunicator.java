@@ -23,6 +23,9 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     private static final String OUTLET = "Outlet";
     private static final String BASE_URI = "model/pdu/0";
     private static final String GET_READING = "getReading";
+    private ExtendedStatistics localStatistics;
+    private ExecutorService controlsExecutor;
+    private ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
     /**
      * MiddleAtlanticPowerUnit constructor.
@@ -32,6 +35,9 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         // override default value to trust all certificates - power unit typically do not have trusted certificates installed
         // it can be changed back by configuration
         setTrustAllCertificates(true);
+        localStatistics = new ExtendedStatistics();
+        localStatistics.setControl(new HashMap<>());
+        localStatistics.setStatistics(new HashMap<>());
     }
 
     @Override
@@ -41,31 +47,33 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
 
     @Override
     public List<Statistics> getMultipleStatistics() throws Exception {
-        ExtendedStatistics extendedStatistics = new ExtendedStatistics();
-        Map<String, String> statistics = Collections.synchronizedMap(new LinkedHashMap<>());
-        Map<String, String> control = new ConcurrentHashMap<>();
+        if(controlsExecutor == null || controlsExecutor.isShutdown()) {
+            ExtendedStatistics extendedStatistics = new ExtendedStatistics();
+            Map<String, String> statistics = Collections.synchronizedMap(new LinkedHashMap<>());
+            Map<String, String> control = new ConcurrentHashMap<>();
 
-        ExecutorService executor = Executors.newCachedThreadPool();
-        runAsync(() -> fillInStatistics(statistics, "Inlet Active Power", "/inlet/0/activePower", GET_READING), executor)
-                .thenRunAsync(() -> fillInStatistics(statistics, "Inlet RMS Current", "/inlet/0/current", GET_READING), executor)
-                .thenRunAsync(() -> fillInStatistics(statistics, "Inlet Line Frequency", "/inlet/0/lineFrequency", GET_READING), executor)
-                .thenRunAsync(() -> fillInStatistics(statistics, "Inlet RMS Voltage", "/inlet/0/voltage", GET_READING), executor)
-                .thenApplyAsync(ignore -> getOutletsCount(), executor)
-                .thenAcceptAsync(count -> IntStream.range(0, count)
-                        .parallel()
-                        .mapToObj(num -> runAsync(() -> fillInOutletState(statistics, control, num), executor)
-                                .thenRunAsync(() -> fillInStatistics(statistics, getOutletRMSName(num),
-                                        "/outlet/" + num + "/current", GET_READING), executor)
-                        )
-                        .forEach(CompletableFuture::join), executor)
-                .get(30, TimeUnit.SECONDS);
+            ExecutorService executor = Executors.newCachedThreadPool();
+            runAsync(() -> fillInStatistics(statistics, "Inlet Active Power", "/inlet/0/activePower", GET_READING), executor)
+                    .thenRunAsync(() -> fillInStatistics(statistics, "Inlet RMS Current", "/inlet/0/current", GET_READING), executor)
+                    .thenRunAsync(() -> fillInStatistics(statistics, "Inlet Line Frequency", "/inlet/0/lineFrequency", GET_READING), executor)
+                    .thenRunAsync(() -> fillInStatistics(statistics, "Inlet RMS Voltage", "/inlet/0/voltage", GET_READING), executor)
+                    .thenApplyAsync(ignore -> getOutletsCount(), executor)
+                    .thenAcceptAsync(count -> IntStream.range(0, count)
+                            .parallel()
+                            .mapToObj(num -> runAsync(() -> fillInOutletState(statistics, control, num), executor)
+                                    .thenRunAsync(() -> fillInStatistics(statistics, getOutletRMSName(num),
+                                            "/outlet/" + num + "/current", GET_READING), executor)
+                            )
+                            .forEach(CompletableFuture::join), executor)
+                    .get(30, TimeUnit.SECONDS);
 
-        executor.shutdownNow();
+            executor.shutdownNow();
 
-        extendedStatistics.setStatistics(statistics);
-        extendedStatistics.setControl(control);
-
-        return new ArrayList<>(Arrays.asList(extendedStatistics));
+            extendedStatistics.setStatistics(statistics);
+            extendedStatistics.setControl(control);
+            localStatistics = extendedStatistics;
+        }
+        return Collections.singletonList(localStatistics);
     }
 
     /**
@@ -130,6 +138,10 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
                 statistics.put(getOutletDisplayName(outletNumber),
                         String.valueOf(result.findPath("powerState").asInt() == 1));
                 control.put(getOutletDisplayName(outletNumber), "Toggle");
+
+                localStatistics.getStatistics().put(getOutletDisplayName(outletNumber),
+                        String.valueOf(result.findPath("powerState").asInt() == 1));
+                localStatistics.getControl().put(getOutletDisplayName(outletNumber), "Toggle");
             }
         } catch (Exception e) {
             throw new RuntimeException("Method doesn't not work at the URI " + BASE_URI + "/model/outlet", e);
@@ -178,7 +190,10 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
 
     @Override
     public void controlProperty(ControllableProperty controllableProperty) {
-        runAsync(() -> {
+        if(controlsExecutor == null || controlsExecutor.isShutdown()) {
+            controlsExecutor = Executors.newCachedThreadPool();
+        }
+        controlsExecutor.execute(() -> {
             try {
                 setOutletState(controllableProperty);
             } catch (Exception e) {
@@ -187,8 +202,11 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
                             + "value=" + controllableProperty.getValue() +
                             " deviceId=" + controllableProperty.getDeviceId(), e);
                 }
+            } finally {
+                scheduledExecutor.schedule(() -> controlsExecutor.shutdown(), 3000, TimeUnit.MILLISECONDS);
             }
         });
+
     }
 
     private void setOutletState(ControllableProperty controllableProperty) throws Exception {
