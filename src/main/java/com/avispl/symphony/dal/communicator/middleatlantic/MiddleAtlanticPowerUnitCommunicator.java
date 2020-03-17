@@ -210,6 +210,8 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
                                 " deviceId=" + controllableProperty.getDeviceId(), e);
                     }
                 } finally {
+                    scheduledExecutor.shutdownNow();
+                    scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
                     scheduledExecutor.schedule(() -> controlsExecutor.shutdown(), 3000, TimeUnit.MILLISECONDS);
                 }
             });
@@ -227,7 +229,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         localStatistics.getStatistics().put(property,
                 String.valueOf(Integer.parseInt(String.valueOf(controllableProperty.getValue())) == 1));
         localStatistics.getControl().put(property, "Toggle");
-        
+
         String data = "{\"jsonrpc\":\"2.0\",\"method\":\"setPowerState\",\"params\":{\"pstate\":" + controllableProperty.getValue() + "}}";
         try {
             response = doPostFiltered(uri, data, "_ret_").asText();
