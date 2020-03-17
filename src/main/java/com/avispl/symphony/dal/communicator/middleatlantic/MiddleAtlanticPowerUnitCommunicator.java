@@ -147,9 +147,6 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
                         String.valueOf(result.findPath("powerState").asInt() == 1));
                 control.put(getOutletDisplayName(outletNumber), "Toggle");
 
-                localStatistics.getStatistics().put(getOutletDisplayName(outletNumber),
-                        String.valueOf(result.findPath("powerState").asInt() == 1));
-                localStatistics.getControl().put(getOutletDisplayName(outletNumber), "Toggle");
             }
         } catch (Exception e) {
             throw new RuntimeException("Method doesn't not work at the URI " + BASE_URI + "/model/outlet", e);
@@ -227,6 +224,10 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         int outletNumber = Integer.parseInt(String.valueOf(property.charAt(property.length() - 1)));
         String uri = BASE_URI + "/outlet/" + (outletNumber - 1);
 
+        localStatistics.getStatistics().put(property,
+                String.valueOf(Integer.parseInt(String.valueOf(controllableProperty.getValue())) == 1));
+        localStatistics.getControl().put(property, "Toggle");
+        
         String data = "{\"jsonrpc\":\"2.0\",\"method\":\"setPowerState\",\"params\":{\"pstate\":" + controllableProperty.getValue() + "}}";
         try {
             response = doPostFiltered(uri, data, "_ret_").asText();
