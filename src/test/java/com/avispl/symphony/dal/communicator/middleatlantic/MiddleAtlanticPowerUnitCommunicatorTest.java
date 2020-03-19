@@ -99,7 +99,7 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
     public void verifyPowerStateControlON() throws InterruptedException {
         ControllableProperty controllablePropertyPowerStateON = new ControllableProperty();
         controllablePropertyPowerStateON.setDeviceId("deviceId");
-        controllablePropertyPowerStateON.setProperty("1");
+        controllablePropertyPowerStateON.setProperty("Outlet 1");
         controllablePropertyPowerStateON.setValue(1);
 
        middleAtlanticPowerUnitCommunicator.controlProperty(controllablePropertyPowerStateON);
@@ -111,7 +111,7 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
     public void verifyPowerStateControlOFF() throws InterruptedException {
         ControllableProperty controllablePropertyPowerStateOFF = new ControllableProperty();
         controllablePropertyPowerStateOFF.setDeviceId("deviceId");
-        controllablePropertyPowerStateOFF.setProperty("1");
+        controllablePropertyPowerStateOFF.setProperty("Outlet 1");
         controllablePropertyPowerStateOFF.setValue(0);
 
         middleAtlanticPowerUnitCommunicator.controlProperty(controllablePropertyPowerStateOFF);
