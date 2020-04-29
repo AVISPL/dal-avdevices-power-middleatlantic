@@ -16,7 +16,7 @@ jobs:
     - name: Build and test with Maven
       run: mvn -B clean test install -Dgroups="test"
     - id: getfilename
-      run: echo "::set-output name=file::$(ls target/symphony-dal-communicator-middleatlantic-*-SNAPSHOT.jar)"
+      run: echo "::set-output name=file::$(ls target/symphony-dal-communicator-middleatlantic-*.jar)"
     - uses: actions/upload-artifact@v1
       with:
         name: middleatlantic
