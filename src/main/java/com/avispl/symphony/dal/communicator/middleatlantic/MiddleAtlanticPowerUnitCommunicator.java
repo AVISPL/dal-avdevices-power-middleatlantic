@@ -25,9 +25,10 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     private static final String BASE_URI = "model/pdu/0";
     private static final String GET_READING = "getReading";
     private ExtendedStatistics localStatistics;
-    private ExecutorService controlsExecutor;
     private ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+
+    private boolean controlsRunning = false;
 
     /**
      * MiddleAtlanticPowerUnit constructor.
@@ -49,7 +50,8 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
 
     @Override
     public List<Statistics> getMultipleStatistics() throws Exception {
-        if(controlsExecutor == null || controlsExecutor.isShutdown()) {
+        // This is to make sure if the statistics is being fetched before/after any set of control operations
+        if(!controlsRunning) {
             try {
                 readWriteLock.writeLock().lock();
                 ExtendedStatistics extendedStatistics = new ExtendedStatistics();
@@ -189,16 +191,21 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     public void controlProperty(ControllableProperty controllableProperty) {
         try {
             readWriteLock.readLock().lock();
-            if (controlsExecutor == null || controlsExecutor.isShutdown()) {
-                controlsExecutor = Executors.newCachedThreadPool();
-            }
+            controlsRunning = true;
+            ExecutorService controlsExecutor = Executors.newCachedThreadPool();
             controlsExecutor.execute(() -> {
                 try {
                     setOutletState(controllableProperty);
                 } finally {
                     scheduledExecutor.shutdownNow();
                     scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-                    scheduledExecutor.schedule(() -> controlsExecutor.shutdown(), 3000, TimeUnit.MILLISECONDS);
+                    // 3000ms timeout for the controls, so if multiple controls
+                    // are triggered - they will be stacked up together, without having
+                    // a statistics call after each of them
+                    scheduledExecutor.schedule(() -> {
+                        controlsExecutor.shutdown();
+                        controlsRunning = false;
+                        }, 3000, TimeUnit.MILLISECONDS);
                 }
             });
         } finally {
