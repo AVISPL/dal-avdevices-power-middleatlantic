@@ -6,7 +6,7 @@
 
     <groupId>com.avispl.symphony.dal.device.middleatlantic</groupId>
     <artifactId>symphony-dal-communicator-middleatlantic</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <properties>
         <symphonyApiVersion>RELEASE</symphonyApiVersion>
     </properties>
