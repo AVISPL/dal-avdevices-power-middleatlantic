@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2020 AVI-SPL Inc. All Rights Reserved.
+ */
 package com.avispl.symphony.dal.communicator.middleatlantic;
 
 import com.avispl.symphony.api.dal.control.Controller;
@@ -39,8 +42,6 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         // it can be changed back by configuration
         setTrustAllCertificates(true);
         localStatistics = new ExtendedStatistics();
-        localStatistics.setControl(new HashMap<>());
-        localStatistics.setStatistics(new HashMap<>());
     }
 
     @Override
@@ -48,47 +49,56 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         // nothing to do here, authentication is done in individual requests
     }
 
+    /**
+     * Getting statistics of the device.
+     * Need to make sure that none of control operations are running when trying to fetch the statistics
+     */
     @Override
     public List<Statistics> getMultipleStatistics() throws Exception {
+        ExtendedStatistics extendedStatistics = new ExtendedStatistics();
         // This is to make sure if the statistics is being fetched before/after any set of control operations
-        if(!controlsRunning) {
-            try {
-                readWriteLock.writeLock().lock();
-                ExtendedStatistics extendedStatistics = new ExtendedStatistics();
-                Map<String, String> statistics = Collections.synchronizedMap(new LinkedHashMap<>());
-                Map<String, String> control = new ConcurrentHashMap<>();
-
-                ExecutorService executor = Executors.newCachedThreadPool();
-                runAsync(() -> fillInStatistics(statistics, "Inlet Active Power", "/inlet/0/activePower", GET_READING), executor)
-                        .thenRunAsync(() -> fillInStatistics(statistics, "Inlet RMS Current", "/inlet/0/current", GET_READING), executor)
-                        .thenRunAsync(() -> fillInStatistics(statistics, "Inlet Line Frequency", "/inlet/0/lineFrequency", GET_READING), executor)
-                        .thenRunAsync(() -> fillInStatistics(statistics, "Inlet RMS Voltage", "/inlet/0/voltage", GET_READING), executor)
-                        .thenApplyAsync(ignore -> getOutletsCount(), executor)
-                        .thenAcceptAsync(count -> IntStream.range(0, count)
-                                .parallel()
-                                .mapToObj(num -> runAsync(() -> fillInOutletState(statistics, control, num), executor)
-                                        .thenRunAsync(() -> fillInStatistics(statistics, getOutletRMSName(num),
-                                                "/outlet/" + num + "/current", GET_READING), executor)
-                                )
-                                .forEach(CompletableFuture::join), executor)
-                        .get(30, TimeUnit.SECONDS);
-
-                executor.shutdownNow();
-
-                extendedStatistics.setStatistics(statistics);
-                extendedStatistics.setControl(control);
-                localStatistics = extendedStatistics;
-            } finally {
-                readWriteLock.writeLock().unlock();
-            }
+        if(controlsRunning){
+            extendedStatistics.setStatistics(localStatistics.getStatistics());
+            extendedStatistics.setControl(localStatistics.getControl());
+            return Collections.singletonList(extendedStatistics);
         }
-        return Collections.singletonList(localStatistics);
+
+        try {
+            readWriteLock.writeLock().lock();
+            Map<String, String> statistics = Collections.synchronizedMap(new LinkedHashMap<>());
+            Map<String, String> control = new ConcurrentHashMap<>();
+
+            ExecutorService executor = Executors.newCachedThreadPool();
+            runAsync(() -> fillInStatistics(statistics, "Inlet Active Power", "/inlet/0/activePower", GET_READING), executor)
+                    .thenRunAsync(() -> fillInStatistics(statistics, "Inlet RMS Current", "/inlet/0/current", GET_READING), executor)
+                    .thenRunAsync(() -> fillInStatistics(statistics, "Inlet Line Frequency", "/inlet/0/lineFrequency", GET_READING), executor)
+                    .thenRunAsync(() -> fillInStatistics(statistics, "Inlet RMS Voltage", "/inlet/0/voltage", GET_READING), executor)
+                    .thenApplyAsync(ignore -> getOutletsCount(), executor)
+                    .thenAcceptAsync(count -> IntStream.range(0, count)
+                            .parallel()
+                            .mapToObj(num -> runAsync(() -> fillInOutletState(statistics, control, num), executor)
+                                    .thenRunAsync(() -> fillInStatistics(statistics, getOutletRMSName(num),
+                                            "/outlet/" + num + "/current", GET_READING), executor)
+                            )
+                            .forEach(CompletableFuture::join), executor)
+                    .get(30, TimeUnit.SECONDS);
+
+            executor.shutdownNow();
+
+            extendedStatistics.setStatistics(statistics);
+            extendedStatistics.setControl(control);
+            localStatistics = extendedStatistics;
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+        return Collections.singletonList(extendedStatistics);
     }
 
     /**
-     * @return -1 if host is not reachable within
+     * @return pingTimeout value if host is not reachable within
      * the pingTimeout, a ping time in milliseconds otherwise
      * if ping is 0ms it's rounded up to 1ms to avoid IU issues on Symphony portal
+     *
      * @throws IOException
      */
     @Override
@@ -112,13 +122,13 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
                     if (this.logger.isDebugEnabled()) {
                         this.logger.debug(String.format("PING DISCONNECTED: Connection to %s did not succeed within the timeout period of %sms", this.getHost(), this.getPingTimeout()));
                     }
-                    return -1;
+                    return this.getPingTimeout();
                 }
             } catch (SocketTimeoutException tex) {
                 if (this.logger.isDebugEnabled()) {
                     this.logger.debug(String.format("PING TIMEOUT: Connection to %s did not succeed within the timeout period of %sms", this.getHost(), this.getPingTimeout()));
                 }
-                return -1;
+                return this.getPingTimeout();
             }
         }
         return Math.max(1, Math.toIntExact(pingResultTotal / this.getPingAttempts()));
@@ -175,6 +185,12 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         }
     }
 
+    /**
+     * RPC request preparation, to avoid copy-pasting in code
+     *
+     * @param method method to use for an RPC request
+     * @return Map with an rpcRequest, containing a method needed
+     */
     private Map prepareRPCRequest(String method) {
         Map<String, String> rpcRequest = new HashMap();
         rpcRequest.put("jsonrpc", "2.0");
@@ -187,6 +203,11 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         emptyIfNull(controllableProperties).forEach(this::controlProperty);
     }
 
+    /**
+     * Control action is performed. Currently supports switching outlets on/off.
+     * Need to make sure control properties are not blocked by any REST API call
+     * to avoid interfering and timeout exceptions
+     */
     @Override
     public void controlProperty(ControllableProperty controllableProperty) {
         try {
@@ -213,15 +234,24 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         }
     }
 
+    /**
+     * Sets outlet state to either on or off.
+     * localStatistics variable is populated by the statistics/control status values on first statistics
+     * collection cycle. Since the controls are being stacked together - it's possible that symphony tries to fetch statistics
+     * while some of the controls actions are not finished yet. For this matter the latest "real" toggle values are
+     * put into the localStatistics variable.
+     */
     private void setOutletState(ControllableProperty controllableProperty) {
         String property = controllableProperty.getProperty();
         // in API used numeration from 0, but in UI from 1
         int outletNumber = Integer.parseInt(property.substring(OUTLET.length()).trim()) - 1;
         String uri = BASE_URI + "/outlet/" + outletNumber;
 
-        localStatistics.getStatistics().put(property,
-                String.valueOf(Integer.parseInt(String.valueOf(controllableProperty.getValue())) == 1));
-        localStatistics.getControl().put(property, "Toggle");
+        if(localStatistics.getStatistics() != null) {
+            localStatistics.getStatistics().put(property,
+                    String.valueOf(Integer.parseInt(String.valueOf(controllableProperty.getValue())) == 1));
+            localStatistics.getControl().put(property, "Toggle");
+        }
 
         String data = "{\"jsonrpc\":\"2.0\",\"method\":\"setPowerState\",\"params\":{\"pstate\":" + controllableProperty.getValue() + "}}";
         try {
