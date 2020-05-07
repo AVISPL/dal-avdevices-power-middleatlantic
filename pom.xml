@@ -73,16 +73,17 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/plugins/*</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources/plugins</directory>
-                <excludes>
-                    <exclude>*</exclude>
-                </excludes>
-                <filtering>false</filtering>
-            </resource>
-        </resources>
     </build>
     <reporting>
         <plugins>
