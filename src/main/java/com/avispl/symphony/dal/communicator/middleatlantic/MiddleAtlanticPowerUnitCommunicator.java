@@ -32,7 +32,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     private ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
-    private boolean controlsRunning = false;
+    private volatile boolean controlsRunning = false;
 
     /**
      * MiddleAtlanticPowerUnit constructor.
@@ -42,7 +42,6 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         // override default value to trust all certificates - power unit typically do not have trusted certificates installed
         // it can be changed back by configuration
         setTrustAllCertificates(true);
-        localStatistics = new ExtendedStatistics();
     }
 
     @Override
@@ -58,9 +57,9 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     public List<Statistics> getMultipleStatistics() throws Exception {
         ExtendedStatistics extendedStatistics = new ExtendedStatistics();
         // This is to make sure if the statistics is being fetched before/after any set of control operations
-        if(controlsRunning){
-            extendedStatistics.setStatistics(ImmutableMap.copyOf(localStatistics.getStatistics()));
-            extendedStatistics.setControl(ImmutableMap.copyOf(localStatistics.getControl()));
+        if(controlsRunning && localStatistics != null){
+            extendedStatistics.setStatistics(new HashMap<>(localStatistics.getStatistics()));
+            extendedStatistics.setControl(new HashMap<>(localStatistics.getControl()));
             return Collections.singletonList(extendedStatistics);
         }
 
@@ -248,7 +247,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         int outletNumber = Integer.parseInt(property.substring(OUTLET.length()).trim()) - 1;
         String uri = BASE_URI + "/outlet/" + outletNumber;
 
-        if(localStatistics.getStatistics() != null) {
+        if(localStatistics != null) {
             localStatistics.getStatistics().put(property,
                     String.valueOf(Integer.parseInt(String.valueOf(controllableProperty.getValue())) == 1));
             localStatistics.getControl().put(property, "Toggle");
