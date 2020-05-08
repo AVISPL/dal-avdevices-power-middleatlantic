@@ -10,6 +10,7 @@ import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.api.dal.monitor.Monitorable;
 import com.avispl.symphony.dal.communicator.RestCommunicator;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -58,8 +59,8 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         ExtendedStatistics extendedStatistics = new ExtendedStatistics();
         // This is to make sure if the statistics is being fetched before/after any set of control operations
         if(controlsRunning){
-            extendedStatistics.setStatistics(localStatistics.getStatistics());
-            extendedStatistics.setControl(localStatistics.getControl());
+            extendedStatistics.setStatistics(ImmutableMap.copyOf(localStatistics.getStatistics()));
+            extendedStatistics.setControl(ImmutableMap.copyOf(localStatistics.getControl()));
             return Collections.singletonList(extendedStatistics);
         }
 
