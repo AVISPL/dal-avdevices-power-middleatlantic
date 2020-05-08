@@ -16,7 +16,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
@@ -29,7 +29,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     private static final String GET_READING = "getReading";
     private ExtendedStatistics localStatistics;
     private ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-    private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final ReentrantLock reentrantLock = new ReentrantLock();
 
     private volatile boolean controlsRunning = false;
 
@@ -62,8 +62,8 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
             return Collections.singletonList(extendedStatistics);
         }
 
+        reentrantLock.lock();
         try {
-            readWriteLock.writeLock().lock();
             Map<String, String> statistics = Collections.synchronizedMap(new LinkedHashMap<>());
             Map<String, String> control = new ConcurrentHashMap<>();
 
@@ -86,10 +86,10 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
 
             extendedStatistics.setStatistics(statistics);
             extendedStatistics.setControl(control);
-            localStatistics = extendedStatistics;
         } finally {
-            readWriteLock.writeLock().unlock();
+            reentrantLock.unlock();
         }
+        localStatistics = extendedStatistics;
         return Collections.singletonList(extendedStatistics);
     }
 
@@ -205,12 +205,12 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     /**
      * Control action is performed. Currently supports switching outlets on/off.
      * Need to make sure control properties are not blocked by any REST API call
-     * to avoid interfering and timeout exceptions
+     * to avoid interfering and timeout exceptions.
      */
     @Override
     public void controlProperty(ControllableProperty controllableProperty) {
+        reentrantLock.lock();
         try {
-            readWriteLock.readLock().lock();
             controlsRunning = true;
             ExecutorService controlsExecutor = Executors.newCachedThreadPool();
             controlsExecutor.execute(() -> {
@@ -228,9 +228,15 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
                         }, 3000, TimeUnit.MILLISECONDS);
                 }
             });
+            if(localStatistics != null) {
+                localStatistics.getStatistics().put(controllableProperty.getProperty(),
+                        String.valueOf(Integer.parseInt(String.valueOf(controllableProperty.getValue())) == 1));
+                localStatistics.getControl().put(controllableProperty.getProperty(), "Toggle");
+            }
         } finally {
-            readWriteLock.readLock().unlock();
+            reentrantLock.unlock();
         }
+
     }
 
     /**
@@ -245,12 +251,6 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         // in API used numeration from 0, but in UI from 1
         int outletNumber = Integer.parseInt(property.substring(OUTLET.length()).trim()) - 1;
         String uri = BASE_URI + "/outlet/" + outletNumber;
-
-        if(localStatistics != null) {
-            localStatistics.getStatistics().put(property,
-                    String.valueOf(Integer.parseInt(String.valueOf(controllableProperty.getValue())) == 1));
-            localStatistics.getControl().put(property, "Toggle");
-        }
 
         String data = "{\"jsonrpc\":\"2.0\",\"method\":\"setPowerState\",\"params\":{\"pstate\":" + controllableProperty.getValue() + "}}";
         try {
