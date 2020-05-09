@@ -56,14 +56,14 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     public List<Statistics> getMultipleStatistics() throws Exception {
         ExtendedStatistics extendedStatistics = new ExtendedStatistics();
         // This is to make sure if the statistics is being fetched before/after any set of control operations
-        if(controlsRunning && localStatistics != null){
-            extendedStatistics.setStatistics(new HashMap<>(localStatistics.getStatistics()));
-            extendedStatistics.setControl(new HashMap<>(localStatistics.getControl()));
-            return Collections.singletonList(extendedStatistics);
-        }
 
         reentrantLock.lock();
         try {
+            if(controlsRunning && localStatistics != null){
+                extendedStatistics.setStatistics(new HashMap<>(localStatistics.getStatistics()));
+                extendedStatistics.setControl(new HashMap<>(localStatistics.getControl()));
+                return Collections.singletonList(extendedStatistics);
+            }
             Map<String, String> statistics = Collections.synchronizedMap(new LinkedHashMap<>());
             Map<String, String> control = new ConcurrentHashMap<>();
 
@@ -86,10 +86,10 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
 
             extendedStatistics.setStatistics(statistics);
             extendedStatistics.setControl(control);
+            localStatistics = extendedStatistics;
         } finally {
             reentrantLock.unlock();
         }
-        localStatistics = extendedStatistics;
         return Collections.singletonList(extendedStatistics);
     }
 
