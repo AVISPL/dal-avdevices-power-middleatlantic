@@ -20,7 +20,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
-import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 
 public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implements Monitorable, Controller {
 
@@ -199,7 +198,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
 
     @Override
     public void controlProperties(List<ControllableProperty> controllableProperties) {
-        emptyIfNull(controllableProperties).forEach(this::controlProperty);
+        controllableProperties.forEach(this::controlProperty);
     }
 
     /**
