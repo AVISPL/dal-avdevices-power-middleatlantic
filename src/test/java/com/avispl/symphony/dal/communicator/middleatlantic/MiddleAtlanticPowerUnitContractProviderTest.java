@@ -22,10 +22,10 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 @Tag("localtest")
 public class MiddleAtlanticPowerUnitContractProviderTest {
     private static final int POWER_UNIT_PORT = 443;
-    private static final String POWER_UNIT_IP_ADDRESS = "172.31.254.201";
+    private static final String POWER_UNIT_IP_ADDRESS = "10.254.254.55";
     private static final String LOCAL_IP_ADDRESS = "127.0.0.1";
-    private static final String POWER_UNIT_TEST_USERNAME = "admin";
-    private static final String POWER_UNIT_TEST_PASSWORD = "admin";
+    private static final String POWER_UNIT_TEST_USERNAME = "user";
+    private static final String POWER_UNIT_TEST_PASSWORD = "D3vel0pe";
 
     private static WireMockServer wireMockServer;
 

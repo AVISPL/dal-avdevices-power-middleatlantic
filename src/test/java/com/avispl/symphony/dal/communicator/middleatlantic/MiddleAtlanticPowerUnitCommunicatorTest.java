@@ -8,11 +8,13 @@ import com.avispl.symphony.dal.communicator.HttpCommunicator;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Assert;
 import org.junit.Rule;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -51,12 +53,19 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
     @Test
     public void powerUnitIsPingable() throws Exception {
         int pingResult = middleAtlanticPowerUnitCommunicator.ping();
-        Assert.assertTrue( pingResult < 1000 && pingResult > -1);
+        Assertions.assertTrue(pingResult < 1000 && pingResult > -1);
     }
 
     @Test
     public void verifyPowerUnitStatistics() throws Exception {
+        middleAtlanticPowerUnitCommunicator.setHistoricalProperties("Outlet 1 RMS Current, Outlet 2 RMS Current, Inlet Active Power, Outlet 1");
         List<Statistics> statisticsList = middleAtlanticPowerUnitCommunicator.getMultipleStatistics();
+
+        Assertions.assertFalse(statisticsList.isEmpty());
+
+        ExtendedStatistics extendedStatistics = (ExtendedStatistics)middleAtlanticPowerUnitCommunicator.getMultipleStatistics().get(0);
+        Map<String, String> statisticsMap = extendedStatistics.getStatistics();
+        Map<String, String> dynamicStatisticsMap = extendedStatistics.getDynamicStatistics();
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/inlet/0/activePower")));
         wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/inlet/0/current")));
@@ -80,8 +89,20 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
         wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/1/current")));
         wireMockRule.verify(postRequestedFor(urlEqualTo("/model/pdu/0/outlet/0/current")));
 
-        Assert.assertFalse(statisticsList.isEmpty());
-        Assert.assertFalse(((ExtendedStatistics)statisticsList.get(0)).getStatistics().isEmpty());
+        Assertions.assertNotNull(statisticsMap);
+        Assertions.assertNotNull(dynamicStatisticsMap);
+        Assertions.assertFalse(statisticsMap.isEmpty());
+        Assertions.assertFalse(dynamicStatisticsMap.isEmpty());
+
+        Assertions.assertEquals("59.999999", statisticsMap.get("Inlet Line Frequency"));
+        Assertions.assertEquals("0.796", statisticsMap.get("Inlet RMS Current"));
+        Assertions.assertEquals("118.829997", statisticsMap.get("Inlet RMS Voltage"));
+        Assertions.assertEquals("0.496", statisticsMap.get("Outlet 3 RMS Current"));
+        Assertions.assertEquals("74.460004", dynamicStatisticsMap.get("Inlet Active Power"));
+        Assertions.assertEquals("0.496", dynamicStatisticsMap.get("Outlet 1 RMS Current"));
+        Assertions.assertEquals("0.496", dynamicStatisticsMap.get("Outlet 2 RMS Current"));
+        Assertions.assertNotNull(statisticsMap.get("Outlet 1"));
+        Assertions.assertNull(dynamicStatisticsMap.get("Outlet 1"));
     }
 
     @Test
@@ -89,10 +110,10 @@ public class MiddleAtlanticPowerUnitCommunicatorTest {
         List<Statistics> statisticsListFirstCall = middleAtlanticPowerUnitCommunicator.getMultipleStatistics();
         List<Statistics> statisticsListSecondCall = middleAtlanticPowerUnitCommunicator.getMultipleStatistics();
 
-        Assert.assertFalse(statisticsListFirstCall.isEmpty());
-        Assert.assertFalse(((ExtendedStatistics)statisticsListFirstCall.get(0)).getStatistics().isEmpty());
-        Assert.assertFalse(statisticsListSecondCall.isEmpty());
-        Assert.assertFalse(((ExtendedStatistics)statisticsListSecondCall.get(0)).getStatistics().isEmpty());
+        Assertions.assertFalse(statisticsListFirstCall.isEmpty());
+        Assertions.assertFalse(((ExtendedStatistics)statisticsListFirstCall.get(0)).getStatistics().isEmpty());
+        Assertions.assertFalse(statisticsListSecondCall.isEmpty());
+        Assertions.assertFalse(((ExtendedStatistics)statisticsListSecondCall.get(0)).getStatistics().isEmpty());
     }
 
     @Test
