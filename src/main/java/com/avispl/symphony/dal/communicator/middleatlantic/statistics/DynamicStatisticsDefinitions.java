@@ -10,7 +10,7 @@ import java.util.Optional;
  * DynamicStatisticsDefinitions contains definitions for Dynamic property candidates.
  *
  * @author Maksym.Rossiitsev / Symphony Dev Team<br>
- * @since 1.1.3
+ * @since 1.1.0
  * */
 public enum DynamicStatisticsDefinitions {
     InletActivePower("Inlet Active Power"),
