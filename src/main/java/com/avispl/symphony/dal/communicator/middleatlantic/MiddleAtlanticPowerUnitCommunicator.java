@@ -11,7 +11,6 @@ import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.api.dal.monitor.Monitorable;
 import com.avispl.symphony.dal.communicator.RestCommunicator;
 import com.avispl.symphony.dal.communicator.middleatlantic.statistics.DynamicStatisticsDefinitions;
-import com.avispl.symphony.dal.util.StringUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import java.net.Socket;
@@ -47,7 +46,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     private final ReentrantLock reentrantLock = new ReentrantLock();
 
     private volatile boolean controlsRunning = false;
-    private String historicalProperties;
+    private Set<String> historicalProperties = new HashSet<>();
 
     /**
      * Retrieves {@link #historicalProperties}
@@ -55,7 +54,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
      * @return value of {@link #historicalProperties}
      */
     public String getHistoricalProperties() {
-        return historicalProperties;
+        return String.join(",", this.historicalProperties);
     }
 
     /**
@@ -64,7 +63,10 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
      * @param historicalProperties new value of {@link #historicalProperties}
      */
     public void setHistoricalProperties(String historicalProperties) {
-        this.historicalProperties = historicalProperties;
+        this.historicalProperties.clear();
+        Arrays.asList(historicalProperties.split(",")).forEach(propertyName -> {
+            this.historicalProperties.add(propertyName.trim());
+        });
     }
 
     /**
@@ -131,7 +133,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         Map<String, String> dynamicStatistics = new HashMap<>();
         Map<String, String> staticStatistics = new HashMap<>();
         statistics.forEach((s, s2) -> {
-            if (!StringUtils.isNullOrEmpty(historicalProperties) && historicalProperties.contains(s)
+            if (!historicalProperties.isEmpty() && historicalProperties.contains(s)
                     && DynamicStatisticsDefinitions.checkIfExists(s)) {
                 dynamicStatistics.put(s, s2);
             } else {
