@@ -282,9 +282,10 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
             });
             if(localStatistics != null) {
                 int controlValue = Integer.parseInt(String.valueOf(controllableProperty.getValue()));
-                localStatistics.getStatistics().put(controllableProperty.getProperty(),
-                        String.valueOf(controlValue == 1));
-                localStatistics.getControllableProperties().add(createSwitch(controllableProperty.getProperty(), controlValue));
+                String propertyName = controllableProperty.getProperty();
+                localStatistics.getControllableProperties().stream().filter(advancedControllableProperty ->
+                        propertyName.equals(advancedControllableProperty.getName())).findFirst()
+                        .ifPresent(advancedControllableProperty -> advancedControllableProperty.setValue(controlValue));
             }
         } finally {
             reentrantLock.unlock();
