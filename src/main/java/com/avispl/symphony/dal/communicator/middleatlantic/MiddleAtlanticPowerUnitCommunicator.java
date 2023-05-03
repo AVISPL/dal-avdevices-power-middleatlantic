@@ -1,16 +1,17 @@
 /*
- * Copyright (c) 2020 AVI-SPL Inc. All Rights Reserved.
+ * Copyright (c) 2020-2022 AVI-SPL Inc. All Rights Reserved.
  */
 package com.avispl.symphony.dal.communicator.middleatlantic;
 
 import com.avispl.symphony.api.dal.control.Controller;
+import com.avispl.symphony.api.dal.dto.control.AdvancedControllableProperty;
 import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.api.dal.monitor.Monitorable;
 import com.avispl.symphony.dal.communicator.RestCommunicator;
+import com.avispl.symphony.dal.communicator.middleatlantic.statistics.DynamicStatisticsDefinitions;
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -19,9 +20,22 @@ import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 
+import static com.avispl.symphony.dal.util.ControllablePropertyFactory.*;
 import static java.util.concurrent.CompletableFuture.runAsync;
-import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 
+/**
+ * Middle Atlantic Premium+ PDU Adapter.
+ * Uses http communication to provide the following information:
+ * - Inlet Active Power [float, ex 504.985024, historical]
+ * - Inlet Line Frequency [float, ex 59.999999, historical]
+ * - Inlet RMS Current [float, ex 4.7, historical]
+ * - Inlet RMS Voltage [float, ex 115.119997, historical]
+ * - Outlet 1-8 [switch, controllable property]
+ * - Outlet 1-8 RMS Current [float, ex 2.965, historical]
+ *
+ * @author Maksym.Rossiitsev / Symphony Dev Team<br>
+ * @since 1.0
+ */
 public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implements Monitorable, Controller {
 
     private static final String OUTLET = "Outlet";
@@ -32,6 +46,28 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
     private final ReentrantLock reentrantLock = new ReentrantLock();
 
     private volatile boolean controlsRunning = false;
+    private Set<String> historicalProperties = new HashSet<>();
+
+    /**
+     * Retrieves {@link #historicalProperties}
+     *
+     * @return value of {@link #historicalProperties}
+     */
+    public String getHistoricalProperties() {
+        return String.join(",", this.historicalProperties);
+    }
+
+    /**
+     * Sets {@link #historicalProperties} value
+     *
+     * @param historicalProperties new value of {@link #historicalProperties}
+     */
+    public void setHistoricalProperties(String historicalProperties) {
+        this.historicalProperties.clear();
+        Arrays.asList(historicalProperties.split(",")).forEach(propertyName -> {
+            this.historicalProperties.add(propertyName.trim());
+        });
+    }
 
     /**
      * MiddleAtlanticPowerUnit constructor.
@@ -61,11 +97,11 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         try {
             if(controlsRunning && localStatistics != null){
                 extendedStatistics.setStatistics(new HashMap<>(localStatistics.getStatistics()));
-                extendedStatistics.setControl(new HashMap<>(localStatistics.getControl()));
+                extendedStatistics.setControllableProperties(localStatistics.getControllableProperties());
                 return Collections.singletonList(extendedStatistics);
             }
             Map<String, String> statistics = Collections.synchronizedMap(new LinkedHashMap<>());
-            Map<String, String> control = new ConcurrentHashMap<>();
+            List<AdvancedControllableProperty> advancedControllableProperties = new ArrayList<>();
 
             ExecutorService executor = Executors.newCachedThreadPool();
             runAsync(() -> fillInStatistics(statistics, "Inlet Active Power", "/inlet/0/activePower", GET_READING), executor)
@@ -75,7 +111,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
                     .thenApplyAsync(ignore -> getOutletsCount(), executor)
                     .thenAcceptAsync(count -> IntStream.range(0, count)
                             .parallel()
-                            .mapToObj(num -> runAsync(() -> fillInOutletState(statistics, control, num), executor)
+                            .mapToObj(num -> runAsync(() -> fillInOutletState(statistics, advancedControllableProperties, num), executor)
                                     .thenRunAsync(() -> fillInStatistics(statistics, getOutletRMSName(num),
                                             "/outlet/" + num + "/current", GET_READING), executor)
                             )
@@ -84,13 +120,28 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
 
             executor.shutdownNow();
 
-            extendedStatistics.setStatistics(statistics);
-            extendedStatistics.setControl(control);
+            provisionTypedStatistics(statistics, extendedStatistics);
+            extendedStatistics.setControllableProperties(advancedControllableProperties);
             localStatistics = extendedStatistics;
         } finally {
             reentrantLock.unlock();
         }
         return Collections.singletonList(extendedStatistics);
+    }
+
+    private void provisionTypedStatistics(Map<String, String> statistics, ExtendedStatistics extendedStatistics) {
+        Map<String, String> dynamicStatistics = new HashMap<>();
+        Map<String, String> staticStatistics = new HashMap<>();
+        statistics.forEach((s, s2) -> {
+            if (!historicalProperties.isEmpty() && historicalProperties.contains(s)
+                    && DynamicStatisticsDefinitions.checkIfExists(s)) {
+                dynamicStatistics.put(s, s2);
+            } else {
+                staticStatistics.put(s, s2);
+            }
+        });
+        extendedStatistics.setDynamicStatistics(dynamicStatistics);
+        extendedStatistics.setStatistics(staticStatistics);
     }
 
     /**
@@ -145,15 +196,16 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
         return doPost(url, data, JsonNode.class).findPath(path);
     }
 
-    private void fillInOutletState(Map<String, String> statistics, Map<String, String> control, int outletNumber) {
+    private void fillInOutletState(Map<String, String> statistics, List<AdvancedControllableProperty> control, int outletNumber) {
         try {
             JsonNode result = doPost(BASE_URI + "/outlet/" + outletNumber,
                     prepareRPCRequest("getState"), JsonNode.class);
 
             if (result.findPath("available").asBoolean()) {
-                statistics.put(getOutletDisplayName(outletNumber),
-                        String.valueOf(result.findPath("powerState").asInt() == 1));
-                control.put(getOutletDisplayName(outletNumber), "Toggle");
+                String outletDisplayName = getOutletDisplayName(outletNumber);
+                int outletDisplayValue = result.findPath("powerState").asInt();
+                statistics.put(outletDisplayName, String.valueOf(outletDisplayValue));
+                control.add(createSwitch(getOutletDisplayName(outletNumber), outletDisplayValue));
             }
         } catch (Exception e) {
             throw new RuntimeException("Method doesn't not work at the URI " + BASE_URI + "/model/outlet", e);
@@ -199,7 +251,7 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
 
     @Override
     public void controlProperties(List<ControllableProperty> controllableProperties) {
-        emptyIfNull(controllableProperties).forEach(this::controlProperty);
+        controllableProperties.forEach(this::controlProperty);
     }
 
     /**
@@ -229,9 +281,10 @@ public class MiddleAtlanticPowerUnitCommunicator extends RestCommunicator implem
                 }
             });
             if(localStatistics != null) {
+                int controlValue = Integer.parseInt(String.valueOf(controllableProperty.getValue()));
                 localStatistics.getStatistics().put(controllableProperty.getProperty(),
-                        String.valueOf(Integer.parseInt(String.valueOf(controllableProperty.getValue())) == 1));
-                localStatistics.getControl().put(controllableProperty.getProperty(), "Toggle");
+                        String.valueOf(controlValue == 1));
+                localStatistics.getControllableProperties().add(createSwitch(controllableProperty.getProperty(), controlValue));
             }
         } finally {
             reentrantLock.unlock();
